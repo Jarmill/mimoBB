@@ -1,0 +1,9 @@
+SVD rank one update
+
+Formulas by Matthew Brand:
+http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.215.3851&rep=rep1&type=pdf
+"Fast online SVD revisions for lightweight recommender systems"
+
+Implementation by David Wingate (BYU)
+http://pcc.byu.edu/resources.html
+
