@@ -21,7 +21,7 @@ classdef bag_manager
         small_groups;
         
         %cluster vs. subspace
-        use_cluster;
+        use_cluster; 
         
     end
     

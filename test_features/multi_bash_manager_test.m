@@ -12,22 +12,22 @@ norm_type = 1;
 %constraints
 con1 = struct;
 con1.norm_type = 'simp';
-con1.tau = 2;
+con1.tau = 10;
 con1.w = 1;
 con1.index = [1, 2, 3, 4];
-
+%con1.index = [1, 2, 3, 4, 5, 6, 7];
 con2 = struct;
 con2.norm_type = 'simp';
 con2.tau = 4;
 con2.w = 1;
 con2.index = [5, 6, 7];
 
-
+%cons = {con1};
 cons = {con1, con2};
 FCFW = 1;
 
 % function testing
-[x_final, S_final, c_final, atom_source_final, run_log] = BB_1d_multi(A, b, cons, delta);
+[x_final, S_final, c_final, run_log] = BB_1d_multi(A, b, cons, delta);
 
 
 % %manual testing

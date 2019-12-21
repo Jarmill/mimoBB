@@ -10,7 +10,7 @@ classdef multi_bash_manager
         %A;         %data matrix (hopefully unnecessary)
         b;          %answer vector        
         cons;       %constraint set (hard regularization)
-        num_cons;   %number of constraints (atomic balls)        
+        num_cons;   %number of constraints (atomic balls)         
         delta;      %elastic net penalty        
                 
         

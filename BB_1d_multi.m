@@ -1,4 +1,4 @@
-function [x_final, S_final, c_final, atom_source_final, run_log] = BB_1d_multi(A, b, cons, delta)
+function [x_final, S_final, c_final, run_log] = BB_1d_multi(A, b, cons, delta)
 
 %BB_1d_multi Bag and Bash implementation of 1d-penalized regression. All under one
 %roof. Minimizes LSQ + L2 penalty (least squares + l2 penalty).
@@ -81,7 +81,7 @@ is_complex = 0;
 N_bag = 1;
 
 %visualization
-visualize = 0;
+visualize = 1;
 visualize_end = 0;
 visualize_delay = 0;
 
@@ -149,12 +149,7 @@ while ~terminate
 			BM.basher{ind_cons}.bash(y_curr, S_bag_curr, AS_bag_curr);
         
 		y{ind_cons} = ynew_curr;
-		
-        %c_new = BM.basher{ind_cons}.get_c(y{ind_cons});
-        
-        %on_boundary_new = BM.update_ext.exterior;
-        %error_new = BM.get_error(y_new);
-        
+
         %Find statistics of output, including properties of x_new
 %         N_survived = size(S_bag, 2);
 %         N_dropped = 0;
@@ -170,7 +165,6 @@ while ~terminate
         
         Ax_new = Ax;
         Ax_new{ind_cons} = Ax_new_curr;
-        %S_new_curr  = BM.basher{i}.get_S();
                 
         
 %         if is_complex
@@ -179,14 +173,28 @@ while ~terminate
 %             S_new = complex_fold(S_new, 1);
 %         end
 
+        %TODO: update steps on other bashers by Ax_new_sum. 
         Ax_new_sum = sum(cell2mat(Ax_new), 2);
         
+        for i=1:length(cons)
+            if i ~= ind_cons
+                if isempty(Ax{i})
+                    Ax_curr = 0;
+                else
+                    Ax_curr = Ax{i};
+                end
+                
+                b_curr = b - Ax_new_sum + Ax_curr;
+                BM.basher{i}.set_b(b_curr);
+            end
+            
+        end        
+    end
+    
         error_new = 0.5*norm(Ax_new_sum-b)^2 + 0.5*delta*norm(x_new)^2;
         error_gap = error_old - error_new;
         
-        %grad_new = BM.grad(A, y_new);
         grad_new = A'*(Ax_new_sum-b) + delta*x_new;
-    end
     
     
     %% logging of the run
@@ -330,6 +338,7 @@ while ~terminate
 
         title('Regressor')
         
+        %{
     %Atomic Norm
         subplot(4, 2, 4)        
         plot(0:size(run_log.atomic_norm, 2), [zeros(BM.num_cons, 1) run_log.atomic_norm]')
@@ -402,7 +411,7 @@ while ~terminate
         ylabel('$c_i$', 'Interpreter', 'latex')
         xlabel('$i$', 'Interpreter', 'latex')
         title('Coefficients')
-   
+   %}
     %Error
         subplot(4, 2, 7)
         semilogy(0:length(run_log.error_list), [error_orig run_log.error_list])
@@ -421,9 +430,10 @@ while ~terminate
             semilogy(0:(length(run_log.duality_gap)-1), run_log.duality_gap)
         end
         ylabel('DG', 'Interpreter', 'latex')
-        
+         
     %Cardinality
-        subplot(4, 2, 8)
+    %{    
+    subplot(4, 2, 8)
         hold on
         plot(0:length(run_log.cardinality), [0 run_log.cardinality])
         plot(run_log.num_attempted, 'xm')
@@ -436,7 +446,7 @@ while ~terminate
         xlabel('iteration')        
         ylabel('$||c||_0$', 'Interpreter', 'latex')
         title('Cardinality')
-        
+        %}
         
     %look at the output
         if visualize || (visualize_delay == k)
@@ -462,9 +472,16 @@ end
 %package and ship out
 %x_final = BM.get_x(y);
 x_final = x;
-S_final = cellfun(@(Bi) Bi.get_S(), BM.basher);
-c_final = cellfun(@(Bi, yi) Bi.get_c(yi), BM.basher, y);
-atom_source_final = BM.atom_source;
+S_final = cell(size(BM.basher));
+c_final = cell(size(BM.basher));
+for i = 1:length(BM.basher)
+     S_final{i} = BM.basher{i}.get_S();
+     c_final{i} = BM.basher{i}.get_c(y{i});
+end
+
+%S_final = cellfun(@(Bi) Bi.get_S(), BM.basher);
+%c_final = cellfun(@(Bi, yi) Bi.get_c(yi), BM.basher, y);
+
 
 % if total_variation
 %     x_final = cumsum(x_new);

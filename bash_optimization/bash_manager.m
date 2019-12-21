@@ -1019,6 +1019,9 @@ classdef bash_manager
         function obj = set_b(obj, b_in)
             %Dangerous, but this is necessary for multi-bash management
             obj.b = b_in;
+            if ~isempty(obj.AS)
+                obj.rhs = obj.AS'*obj.b;
+            end
         end
         
         %need a way to handle an output of 0.
@@ -1154,6 +1157,27 @@ classdef bash_manager
             end
         end
         
+        function [obj, y_new, drop_ind, bash_iter] = bash_asqp(obj, y_old)
+             %use ASQP code to perform the bash step  
+             
+             %set up the system            
+             r = obj.system_rhs();
+             new_atom_added = 1;
+             param.max_iter = 500;
+             param.debug_mode = 0;
+             param.epsilon = 1e-6;
+             %param.rho = obj.tau;
+             param.rho = 1;
+             
+             %solve the problem
+             [y_new, A, bash_iter] = asqp_constrained(obj.K, r, y_old, param, new_atom_added);
+             
+             
+             %delete bad atoms 
+             drop_ind = find(A==0);      
+             obj = obj.delete_indices(drop_ind);
+        end 
+        
         function [obj, y] = bash(obj, y_in, S_bag, AS_bag)
             %BASH performs the core affine-bashing loop, running
             %single_bash multiple times. Finds a stable-optimal face of the
@@ -1203,33 +1227,41 @@ classdef bash_manager
             
             obj.surviving_ind = (1:(obj.atom_count + obj.update_ext.exterior))';
             
-            %main bashing loop
-            while ~inner_done
-                [obj, y, stable_face, lockout, drop_ind] = obj.single_bash(y);
-                %error_new = obj.get_error(y);
-                %error_gap = error_old - error_new;
-                if stable_face
-                    if ~obj.update_ext.exterior
-                        %interior, done regardless
-                        inner_done = 1;
-                    else
-                        %exterior, need to check stable-suboptimality
-                        grad_full = obj.gradient_full(y);
-                        if all(sign(grad_full) == -1)                        
-                            %stable-optimal face
+            
+            ASQP = 1;
+            if ASQP 
+                [obj, y, drop_ind, bash_iter] = bash_asqp(obj, y);
+            else
+
+                %main bashing loop
+                while ~inner_done
+                    [obj, y, stable_face, lockout, drop_ind] = obj.single_bash(y);
+                    %error_new = obj.get_error(y);
+                    %error_gap = error_old - error_new;
+                    if stable_face
+                        if ~obj.update_ext.exterior
+                            %interior, done regardless
                             inner_done = 1;
                         else
-                            %stable-suboptimal face
-                            %return to interior (full set of dimensions)
-                            y =  [y; 1-sum(y)];
-                            obj = obj.ext_to_full();
+                            %exterior, need to check stable-suboptimality
+                            grad_full = obj.gradient_full(y);
+                            if all(sign(grad_full) == -1)                        
+                                %stable-optimal face
+                                inner_done = 1;
+                            else
+                                %stable-suboptimal face
+                                %return to interior (full set of dimensions)
+                                y =  [y; 1-sum(y)];
+                                obj = obj.ext_to_full();
+                            end
                         end
                     end
-                end
-                bash_iter = bash_iter + 1;                
-                %error_old = error_new;
+                    bash_iter = bash_iter + 1;                
+                    %error_old = error_new;
+                end                   
             end
-                        
+            
+            %return
         end
         
         
