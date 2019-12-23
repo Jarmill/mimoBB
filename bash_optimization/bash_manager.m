@@ -963,7 +963,7 @@ classdef bash_manager
                     %Ly = obj.L * y;
                     %Ky = obj.L' * Ly;
                     Ky = obj.K*y;
-                    grad = Ky - obj.rhs;
+                    grad = Ky - obj.rhs/obj.tau;
                 else
                     %on exterior
 
@@ -1020,7 +1020,7 @@ classdef bash_manager
             %Dangerous, but this is necessary for multi-bash management
             obj.b = b_in;
             if ~isempty(obj.AS)
-                obj.rhs = obj.AS'*obj.b;
+                obj.rhs = obj.AS(:, 1:obj.atom_count)'*obj.b;
             end
         end
         
@@ -1095,10 +1095,14 @@ classdef bash_manager
         
         function error = get_error(obj, y)
             %GET_ERROR finds the elastic net objective error
-            x = obj.get_x(y);
-            Ax = obj.get_Ax(y);
-            
-            error = 0.5*norm(Ax-obj.b)^2 + 0.5*obj.delta*norm(x)^2;
+             if isempty(y)
+                 error = 0.5*sum(obj.b.^2);
+             else
+                 x = obj.get_x(y);
+                 Ax = obj.get_Ax(y);
+                 
+                 error = 0.5*norm(Ax-obj.b)^2 + 0.5*obj.delta*norm(x)^2;
+             end
         end
         
         %% Bashing section
@@ -1161,18 +1165,19 @@ classdef bash_manager
              %use ASQP code to perform the bash step  
              
              %set up the system            
-             r = obj.system_rhs();
+             %r = obj.system_rhs();
+             r = obj.rhs;
              new_atom_added = 1;
              param.max_iter = 500;
              param.debug_mode = 0;
              param.epsilon = 1e-6;
              %param.rho = obj.tau;
-             param.rho = 1;
+             param.rho = obj.tau;
              
-             %solve the problem
-             [y_new, A, bash_iter] = asqp_constrained(obj.K, r, y_old, param, new_atom_added);
+              %solve the problem
+             [Y_new, A, bash_iter] = asqp_constrained(obj.K, r, obj.tau*y_old, param, new_atom_added);
              
-             
+             y_new = Y_new/obj.tau;
              %delete bad atoms 
              drop_ind = find(A==0);      
              obj = obj.delete_indices(drop_ind);
@@ -1216,6 +1221,9 @@ classdef bash_manager
             else
                 %keep everything the same
                 y = y_in;
+                if isempty(obj.S)
+                    return
+                end
             end
             
             %debugging, tracking the error
@@ -1228,8 +1236,10 @@ classdef bash_manager
             obj.surviving_ind = (1:(obj.atom_count + obj.update_ext.exterior))';
             
             
-            ASQP = 1;
+            ASQP = 0;
             if ASQP 
+                %this is wrong, ASQP has an equality constraint that sum(y)
+                %= rho
                 [obj, y, drop_ind, bash_iter] = bash_asqp(obj, y);
             else
 

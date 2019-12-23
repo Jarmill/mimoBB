@@ -101,30 +101,22 @@ else
         %simplex constraint
         %not centrally symmetric, a gauge
         G = G./w;
+        ip = find(G>0);
         a = sparse(size(G, 1), 1);
-        [~, i] = max(G);       
-        a(i) = sign(G(i));
+        [~, i] = max(G(ip));       
+        a(ip(i)) = sign(G(ip(i)));
         a = a ./ w;
     elseif strcmp(norm_type, 'pos')
         %positive orthant intersected with L infinity ball
         %also a gauge, can be described by points of simplex plus a point
         %of all 1's to form the corner
         G = G./w;
-        a_simp = sparse(size(G, 1), 1);
-        [~, i] = max(G);
-        a_simp(i) = sign(G(i));
-        a_simp = a_simp ./ w;
+        ip = find(G>0);
+        a = sparse(size(G, 1), 1);
+        %[~, i] = max(G(ip));       
+        a(G>0) = 1;
+        a = a./ w;
         
-        a_corner = ones(size(G))./w;
-        
-        LMO_simp = G0'*a_simp;
-        LMO_corner = G0'*a_corner;
-        
-        if LMO_simp > LMO_corner
-            a = a_simp;
-        else
-            a = a_corner;
-        end
     elseif strcmp(norm_type, 'chain')
         %k-chain lasso
         %sum of L2 norm penalty, each group is a chain k elements long

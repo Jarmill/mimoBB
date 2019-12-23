@@ -5,7 +5,8 @@ A = rand(10, N);
 b = 10*rand(10, 1);
 tau = 10;
 %tau = 1.5;
-delta = 1e-3;
+%delta = 1e-3;
+delta = 0;
 norm_type = 1;
 
 

@@ -49,7 +49,7 @@ on_boundary = 0;
 
 res = A*x - b;
 grad = A'*res + delta*x;
-error_orig = b'*b;
+error_orig = b'*b/2;
 error_old = error_orig;
 error_gap = Inf;
 
@@ -81,7 +81,7 @@ is_complex = 0;
 N_bag = 1;
 
 %visualization
-visualize = 1;
+visualize = 0;
 visualize_end = 0;
 visualize_delay = 0;
 
@@ -95,6 +95,7 @@ will_visualize = visualize || visualize_end || visualize_delay;
     run_log.num_attempted = [];
     run_log.duality_gap = [];
     run_log.time = [];
+    run_log.system = [];
 if will_visualize
     figure;
     color_list = get(gca,'ColorOrder');    
@@ -108,34 +109,77 @@ if will_visualize
     
 end
 
+terminate_streak = 0;
+
 tic;
 %% main bag and bash loop
+%use cyclic strategy
+Ax_new_sum = 0;
+x_new = 0;
 while ~terminate  
-    [BM, S_bag, DG] = BM.bag_atoms(grad, x, N_bag);
+    
+    %cyclic update
+    ind_cons = mod(k-1, length(cons))+1;
+    %indices of variables currently used in optimization
+    ind_curr = BM.cons{ind_cons}.index;
+    
+    %get onto a stable-optimal face before selecting atom 
+    %in future,  explore cyclical and random.
+		%[DG_max, ind_cons] = max(DG);        
+    
+    y_curr =  y{ind_cons};
+    
+    %preliminary bash, chip away at the chaff of prior iterations
+    %prevents my delicate code from getting stuck or choosing a stupid atom
+    %like all zeros.
+    [BM.basher{ind_cons}, ynew_curr] = ...
+        BM.basher{ind_cons}.bash(y_curr);
+    
+    %how much the loading changed over the last iteration 
+    chaff_change = norm(ynew_curr - y_curr);
+    x_new_curr  = BM.basher{ind_cons}.get_x(ynew_curr);
+    Ax_new_curr = BM.basher{ind_cons}.get_Ax(ynew_curr);
+
+    %x_new = x;
+    %x_new(ind_curr) = x_new_curr;
+
+    %Ax_new = Ax;
+    %Ax_new{ind_cons} = Ax_new_curr;
+    if isempty(Ax{ind_cons})
+        grad_bash = A(:, ind_curr)'*(Ax_new_sum -b) + delta*x(ind_curr);
+    else
+        grad_bash = A(:, ind_curr)'*(Ax_new_sum - Ax{ind_cons} + Ax_new_curr -b) + delta*x(ind_curr);
+    end
+    y{ind_cons} = ynew_curr;
+    
+    %[BM, S_bag, DG] = BM.bag_atoms(grad, x, N_bag);
+    [BM.basher{ind_cons}, S_bag,  DG] = ...
+        BM.basher{ind_cons}.bag_atoms(grad_bash, x(ind_curr), N_bag);
     
     %if the bag is empty, then no more atoms can be added to the system
     %this is a generalized termination condition
     %if isempty(S_bag) || abs(error_gap) < 1e-7    
-    if all(cellfun(@isempty, S_bag))
-    %if all(DG < 1e-4)
-        terminate = 1;
-        %DG = 0;        
-        
-        %input is all zeros, or the optimal point is 0
-        if k == 1 
-            grad_new = grad;
+    %if all(cellfun(@isempty, S_bag))
+    if isempty(S_bag) 
+        if chaff_change < 1e-6
+            %if all(DG < 1e-4)
+            %terminate = 1;
+            %silly method to do terminat ion
+            terminate_streak  = terminate_streak + 1;
+            %DG = 0;        
+
+            %input is all zeros, or the optimal point is 0
+    %         if k == 1 
+    %             grad_new = grad;
+    %         end
         end
     else
-	
+        terminate_streak  = 0;
 		%choose system based on max DG
-		%in future,  explore cyclical and random.
-		[DG_max, ind_cons] = max(DG);
-		
-		%indices of variables currently used in optimization
-		ind_curr = BM.cons{ind_cons}.index;
         
 		
-		S_bag_curr  = S_bag{ind_cons};
+		%S_bag_curr  = S_bag{ind_cons};
+        S_bag_curr = S_bag;
 		AS_bag_curr = A(:, ind_curr)*S_bag_curr;
         y_curr = y{ind_cons};
 %         if is_complex
@@ -149,7 +193,7 @@ while ~terminate
 			BM.basher{ind_cons}.bash(y_curr, S_bag_curr, AS_bag_curr);
         
 		y{ind_cons} = ynew_curr;
-
+    end
         %Find statistics of output, including properties of x_new
 %         N_survived = size(S_bag, 2);
 %         N_dropped = 0;
@@ -175,31 +219,38 @@ while ~terminate
 
         %TODO: update steps on other bashers by Ax_new_sum. 
         Ax_new_sum = sum(cell2mat(Ax_new), 2);
-        
+        error_list = zeros(length(cons), 1);
         for i=1:length(cons)
             if i ~= ind_cons
-                if isempty(Ax{i})
+                if isempty(y{i})
                     Ax_curr = 0;
                 else
                     Ax_curr = Ax{i};
                 end
                 
+                %add delta to this later
                 b_curr = b - Ax_new_sum + Ax_curr;
-                BM.basher{i}.set_b(b_curr);
+                BM.basher{i} = BM.basher{i}.set_b(b_curr);                
             end
+            error_list(i) = BM.basher{i}.get_error(y{i});
             
         end        
-    end
     
+    
+    %terminate if all systems have been scanned and there are no new atoms
+    %added. Current coefficient loading is stable.
+    terminate = (terminate_streak == length(cons));
+        error_list
         error_new = 0.5*norm(Ax_new_sum-b)^2 + 0.5*delta*norm(x_new)^2;
         error_gap = error_old - error_new;
         
-        grad_new = A'*(Ax_new_sum-b) + delta*x_new;
+        %grad_new = A'*(Ax_new_sum-b) + delta*x_new;
     
     
     %% logging of the run
     %c_new = BM.get_c(y_new);
     run_log.error_list(k)  = error_new;
+    run_log.system(k) = ind_cons;
     %run_log.atomic_norm(:, k) = BM.tau' .* BM.get_slant_constraints(c_new);
     %atom_norm_new = BM.get_slant_constraints(c_new);
     %run_log.atomic_norm = [run_log.atomic_norm atom_norm_new];
@@ -459,7 +510,7 @@ while ~terminate
         k = k+1;
         x = x_new;
 		Ax = Ax_new;
-        grad = grad_new;        
+        %grad = grad_new;        
         
         %y = y_new;
         error_old = error_new;
