@@ -12,13 +12,13 @@ norm_type = 1;
 
 %constraints
 con1 = struct;
-con1.norm_type = 'simp';
-con1.tau = 10;
+con1.norm_type = 2;
+con1.tau = 1;
 con1.w = 1;
 con1.index = [1, 2, 3, 4];
 %con1.index = [1, 2, 3, 4, 5, 6, 7];
 con2 = struct;
-con2.norm_type = 'simp';
+con2.norm_type = 1;
 con2.tau = 4;
 con2.w = 1;
 con2.index = [5, 6, 7];

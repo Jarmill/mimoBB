@@ -97,7 +97,7 @@ will_visualize = visualize || visualize_end || visualize_delay;
     run_log.time = [];
     run_log.system = [];
 if will_visualize
-    figure(5);
+    figure;
     color_list = get(gca,'ColorOrder');    
     if is_complex
         th = linspace(0, 2*pi, 51);
@@ -136,14 +136,7 @@ while ~terminate
         BM.basher{ind_cons}.bash(y_curr);
     
     %how much the loading changed over the last iteration 
-    if length(ynew_curr) == length(y_curr)
-        chaff_change = norm(ynew_curr - y_curr);
-    else
-        chaff_change = Inf;
-    end
-    
-    y{ind_cons} = ynew_curr;
-    
+    chaff_change = norm(ynew_curr - y_curr);
     x_new_curr  = BM.basher{ind_cons}.get_x(ynew_curr);
     Ax_new_curr = BM.basher{ind_cons}.get_Ax(ynew_curr);
 
@@ -229,7 +222,7 @@ while ~terminate
         error_list = zeros(length(cons), 1);
         for i=1:length(cons)
             if i ~= ind_cons
-                if isempty(y{i}) && ~BM.basher{i}.update_ext.exterior;
+                if isempty(y{i})
                     Ax_curr = 0;
                 else
                     Ax_curr = Ax{i};

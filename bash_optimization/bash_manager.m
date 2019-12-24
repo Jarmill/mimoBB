@@ -743,8 +743,13 @@ classdef bash_manager
                 
                 
                 %Z is [column of -1, anchor column of kernel (interior)]
-                r_side = obj.rhs/obj.tau - obj.update_ext.Z(:, 2);
+                if obj.atom_count
+                    r_side = obj.rhs/obj.tau - obj.update_ext.Z(:, 2);
+                else
+                    r_side = 0;
+                end
                 r_diag = obj.update_ext.rhs_anc/obj.tau - obj.update_ext.rho;
+                
                 
                 r = r_side - r_diag;
                 
@@ -777,9 +782,14 @@ classdef bash_manager
             
             %Figure out the right hand side first
             %is a shortcut on the expression r = B'(r0/tau - K0 p)            
-            r = obj.system_rhs();
             
-            y_out = obj.K \ r;
+            if obj.atom_count
+                r = obj.system_rhs();
+            
+                y_out = obj.K \ r;
+            else
+                y_out = [];
+            end
             
             %y_out = chol_solve(obj.L, r);
 %             if ~obj.update_ext.exterior
@@ -1022,6 +1032,10 @@ classdef bash_manager
             if ~isempty(obj.AS)
                 obj.rhs = obj.AS(:, 1:obj.atom_count)'*obj.b;
             end
+            
+            if obj.update_ext.exterior
+                obj.update_ext.rhs_anc = obj.update_ext.AS_anc'*obj.b;
+            end
         end
         
         %need a way to handle an output of 0.
@@ -1095,7 +1109,7 @@ classdef bash_manager
         
         function error = get_error(obj, y)
             %GET_ERROR finds the elastic net objective error
-             if isempty(y)
+             if  ~obj.update_ext.exterior && isempty(y) 
                  error = 0.5*sum(obj.b.^2);
              else
                  x = obj.get_x(y);
@@ -1221,7 +1235,7 @@ classdef bash_manager
             else
                 %keep everything the same
                 y = y_in;
-                if isempty(obj.S)
+                if ~obj.atom_count
                     return
                 end
             end

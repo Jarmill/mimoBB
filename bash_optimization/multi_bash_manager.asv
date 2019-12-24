@@ -80,24 +80,12 @@ classdef multi_bash_manager
         end
                    
         
-        function  x = get_x(obj, y)   
-            x = cell(length (obj.cons), 1);
+        function  x = get_x(y)           
             for i = 1:length(obj.cons)
-                x{i} = obj.basher{i}.get_x(y{i});
+                x{i} = 
             end
-            
-            x = cell2mat(x);
         end
-                  
-        function  Ax = get_Ax(obj, y)   
-            Ax = cell(1, length (obj.cons));
-            for i = 1:length(obj.cons)
-                Ax{i} = obj.basher{i}.get_Ax(y{i});
-            end
-            
-            Ax = sum(cell2mat(Ax), 2);
-        end
-        
+                        
         % %% Bashing section
         % function [obj, y] = bash(obj, y_in, ind_cons, S_bag, AS_bag)
 			% %Adds the atom to the system indexed by ind_cons, and then bashes accordingly.
