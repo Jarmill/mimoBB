@@ -1,9 +1,10 @@
-function [x_final, S_final, c_final, run_log] = BB_1d_multi(A, b, cons, delta)
+function [x_final, S_final, c_final, run_log] = BB_operator_multi(A, At, b, cons, opt)
 
-%BB_1d_multi Bag and Bash implementation of 1d-penalized regression. All under one
+%BB_operator Bag and Bash implementation of 1d-penalized regression. All under one
 %roof. Minimizes LSQ + L2 penalty (least squares + l2 penalty).
-%Includes multiple atomic constraints as penalties.
-%
+
+%Operator formulation: arguments are operator A and adjoint A'.
+
 %Supported norms (or gauge functions) are:
 %   Lp norms where p >= 1 (including L1 and Linf) [p]
 %   Simplex constraint (L1 + positive) ['simp']
@@ -32,12 +33,18 @@ function [x_final, S_final, c_final, run_log] = BB_1d_multi(A, b, cons, delta)
 %   c_final:    Weights on atoms in S_final to form x_final
 %   run_log:    Tracking information on run
 
+if isfield(opt, 'delta')    
+    delta = opt.delta;
+else
+    delta = 0;
+end
+
 %start setup of general parameters
 if nargin < 6
     w = 1;
 end
 %number of variables
-N = size(A, 2);
+N = opt.num_var;
 x = sparse(N, 1);
 
 %sparsify this later
@@ -47,8 +54,8 @@ Ax = cell(1, length(cons));
 
 on_boundary = 0;
 
-res = A*x - b;
-grad = A'*res + delta*x;
+res = A(x) - b;
+grad = At(res) + delta*x;
 error_orig = b'*b/2;
 error_old = error_orig;
 error_gap = Inf;
@@ -60,8 +67,8 @@ k = 1;
 %bash management
 FCFW = 1;
 
-%BM = bash_manager(b_bash, tau, delta, norm_type, w, FCFW);
-BM = multi_bash_manager(b, cons, delta, FCFW);
+BM = bash_manager(b_bash, tau, delta, norm_type, w, FCFW);
+%BM = multi_bash_manager(b, cons, delta, FCFW);
 y = cell(length(cons), 1);
 
 is_complex = 0;
@@ -97,7 +104,7 @@ will_visualize = visualize || visualize_end || visualize_delay;
     run_log.time = [];
     run_log.system = [];
 if will_visualize
-    figure;
+    figure(5);
     color_list = get(gca,'ColorOrder');    
     if is_complex
         th = linspace(0, 2*pi, 51);
@@ -136,7 +143,14 @@ while ~terminate
         BM.basher{ind_cons}.bash(y_curr);
     
     %how much the loading changed over the last iteration 
-    chaff_change = norm(ynew_curr - y_curr);
+    if length(ynew_curr) == length(y_curr)
+        chaff_change = norm(ynew_curr - y_curr);
+    else
+        chaff_change = Inf;
+    end
+    
+    y{ind_cons} = ynew_curr;
+    
     x_new_curr  = BM.basher{ind_cons}.get_x(ynew_curr);
     Ax_new_curr = BM.basher{ind_cons}.get_Ax(ynew_curr);
 
@@ -146,9 +160,9 @@ while ~terminate
     %Ax_new = Ax;
     %Ax_new{ind_cons} = Ax_new_curr;
     if isempty(Ax{ind_cons})
-        grad_bash = A(:, ind_curr)'*(Ax_new_sum -b) + delta*x(ind_curr);
+        grad_bash = At(Ax_new_sum -b, ind_curr) + delta*x(ind_curr);
     else
-        grad_bash = A(:, ind_curr)'*(Ax_new_sum - Ax{ind_cons} + Ax_new_curr -b) + delta*x(ind_curr);
+        grad_bash = At(Ax_new_sum - Ax{ind_cons} + Ax_new_curr -b, ind_curr) + delta*x(ind_curr);
     end
     y{ind_cons} = ynew_curr;
     
@@ -180,7 +194,7 @@ while ~terminate
 		
 		%S_bag_curr  = S_bag{ind_cons};
         S_bag_curr = S_bag;
-		AS_bag_curr = A(:, ind_curr)*S_bag_curr;
+		AS_bag_curr = A(S_bag_curr, ind_curr);
         y_curr = y{ind_cons};
 %         if is_complex
 %             S_bag = complex_unfold(S_bag, 1);
@@ -222,7 +236,7 @@ while ~terminate
         error_list = zeros(length(cons), 1);
         for i=1:length(cons)
             if i ~= ind_cons
-                if isempty(y{i})
+                if isempty(y{i}) && ~BM.basher{i}.update_ext.exterior;
                     Ax_curr = 0;
                 else
                     Ax_curr = Ax{i};
@@ -265,7 +279,7 @@ while ~terminate
         %the next project: putting this into a BB_visualizer class
         clf       
         
-        grad_new = A'*(Ax_new_sum -b) + delta*x_new;
+        grad_new = At(Ax_new_sum -b) + delta*x_new;
 
         
         

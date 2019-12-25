@@ -68,19 +68,19 @@ es = kron(ones(5, 1), speye(size(R, 1)));
 A = es' * Rdd * Tmt_kron;
 
 
-b = ye;
-tau = 0.0445;
-delta = 1e-5;
-
-%system description
-norm_type = 'poles';
-w.n = 1000;
-w.rho1 = 0.5;
-w.rho2 = 0.8;
-w.max_angle = pi/3;
-
-%set up the different systems
-sys_index = reshape(1:size(Tmt_kron, 2), [], 2*num_reg);
-w.systems = num2cell(sys_index, 1);
-
-[x_final, S_final, c_final, run_log] = BB_1d(A, b, tau, delta, norm_type, w);
+% b = ye;
+% tau = 0.0445;
+% delta = 1e-5;
+% 
+% %system description
+% norm_type = 'poles';
+% w.n = 1000;
+% w.rho1 = 0.5;
+% w.rho2 = 0.8;
+% w.max_angle = pi/3;
+% 
+% %set up the different systems
+% sys_index = reshape(1:size(Tmt_kron, 2), [], 2*num_reg);
+% w.systems = num2cell(sys_index, 1);
+% 
+% [x_final, S_final, c_final, run_log] = BB_1d(A, b, tau, delta, norm_type, w);

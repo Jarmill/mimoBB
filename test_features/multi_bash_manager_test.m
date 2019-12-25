@@ -1,13 +1,13 @@
 rng(30)
 N = 7;
+opt.num_var = 7;
+opt.tau = 10;
+opt.delta = 0;
 
 A = rand(10, N);
+
 b = 10*rand(10, 1);
-tau = 10;
-%tau = 1.5;
-%delta = 1e-3;
-delta = 0;
-norm_type = 1;
+
 
 
 %constraints
@@ -28,8 +28,12 @@ cons = {con1, con2};
 FCFW = 1;
 
 % function testing
-[x_final, S_final, c_final, run_log] = BB_1d_multi(A, b, cons, delta);
 
+%[x_final, S_final, c_final, run_log] = BB_1d_multi(A, b, cons, delta);
+Af = @(x) data_A(A, x);
+%Atf = @(x, i) data_At(A, x, i);
+Atf = @(x) data_At(A, x);
+[x_final, S_final, c_final, run_log] = BB_operator(Af, Atf, b, cons, opt);
 
 % %manual testing
 % BM = multi_bash_manager(b, cons, delta, FCFW);
@@ -56,3 +60,5 @@ FCFW = 1;
 % AS_bag = A*S_bag;
 % [BM, c2] = BM.bash(c1, S_bag, AS_bag, atom_source_bag);
 % 
+
+
