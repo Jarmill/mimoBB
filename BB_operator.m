@@ -83,7 +83,7 @@ N_bag = bag_int_increase;
 
 
 %visualization
-visualize = 1;
+visualize = 0;
 visualize_end = 1;
 visualize_delay = 0;
 
