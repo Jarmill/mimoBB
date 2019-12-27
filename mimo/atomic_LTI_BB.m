@@ -59,13 +59,17 @@ Ngroups = max(g);
 
 w.groups = cell(Ngroups, 1);
 w.weights = zeros(Ngroups, 1);
+w.order = zeros(Ngroups, 1);
 for gi = 1:Ngroups
     i_curr = find(g_hot(:, gi));
     %penalize the use of second-order poles
     if length(i_curr) == 1
         w.weights(gi) = 1;
+        w.order(gi) = 1;
     else
+        %w.weights(gi) = sqrt(2); %sqrt(2)?
         w.weights(gi) = 2; %sqrt(2)?
+        w.order(gi) = 2;
     end
     
     ind_gi = i_curr+g_offset;
@@ -125,7 +129,7 @@ for gi = 1:Ngroups
     g_curr = w.groups{gi};    
     
     if any(x_final(g_curr))
-        out.group_active(gi) = w.weights(gi);
+        out.group_active(gi) = w.order(gi);
     end
     
 end

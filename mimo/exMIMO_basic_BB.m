@@ -8,7 +8,7 @@
 addpath ..
 close all
 
-Ns = 200; nu = 3; ny = 2; nx = 4;
+Ns = 1000; nu = 3; ny = 2; nx = 4;
 SNR = 60; % signal_var/noise_var
 opt = sisoAtomOptions;
 opt.ShowProgressPlot = true;
@@ -34,10 +34,10 @@ sys = utGenExampleSystem(rho,ny,nu,nx);
 
 
 %opt.tau = 62;
-opt.tau = 300;
+opt.tau = 400;
 
 
-opt.NumAtoms = 100;
+opt.NumAtoms = 200;
 opt.MaxIter = 800;
 opt.ShowProgressPlot = false;
 opt.SearchMethod = "grad";

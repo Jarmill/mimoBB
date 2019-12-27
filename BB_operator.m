@@ -72,6 +72,10 @@ if BM.bagger.sparse_vec && ~is_complex
     bag_int_increase = 8;
     bag_ext_increase = 4;
     N_max = Inf;
+% elseif isstruct(w)
+%     bag_int_increase = 5;
+%     bag_ext_increase = 2;
+%     N_max = 10;
 else
     bag_int_increase = 3;
     bag_ext_increase = 1;
@@ -95,6 +99,7 @@ first_boundary = 0;
     run_log.atomic_norm = [];
     run_log.cardinality = [];
     run_log.num_attempted = [];
+    run_log.num_survived = [];
     run_log.duality_gap = [];
     run_log.time = [];
 if will_visualize
@@ -185,6 +190,7 @@ while ~terminate
     run_log.atomic_norm(k) = tau*norm(c_new, 1);
     run_log.cardinality(k) = nnz(c_new);
     run_log.num_attempted(k) = size(S_bag, 2) + length(c);
+    run_log.num_survived(k) = N_survived;
     run_log.duality_gap(k) = DG;   
     run_log.time(k) = toc;
     
