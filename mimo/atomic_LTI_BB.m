@@ -87,7 +87,8 @@ BB_opt.num_var = nu*ny*np;
 BB_opt.tau = tau;
 BB_opt.w = w;
 BB_opt.delta = 0;
-BB_opt.norm_type = 2;
+%BB_opt.norm_type = 2;
+BB_opt.norm_type = Inf;
 BB_opt.is_complex = 0;
 
 tic

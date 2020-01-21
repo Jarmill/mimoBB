@@ -11,12 +11,15 @@ function [x_final, S_final, c_final, run_log] = BB_operator(A, At, b, opt)
 %   Point cloud (points in w) ['point']
 %
 %Input:
-%   A:          Data matrix, m x n (records by number of predictors)
+%   A:          Data operator (generalizes data matrix)
+%   At:         Adjoint data operator
 %   b:          Answer vector m x 1
+%opt fields:
 %   tau:        Radius of L1/ball or height of simplex
 %   delta:      L2 regularization parameter
 %   norm_type:  Desired regularization norm.
 %   w:          Weights for reweighted heuristic, or additional information
+%   num_var:    Number of variables
 %
 %Output:
 %   x_final:    x that minimizes LSQ + L2 objective

@@ -34,7 +34,8 @@ sys = utGenExampleSystem(rho,ny,nu,nx);
 
 
 %opt.tau = 62;
-opt.tau = 400;
+%opt.tau = 400;
+opt.tau = 350;
 
 
 opt.NumAtoms = 200;

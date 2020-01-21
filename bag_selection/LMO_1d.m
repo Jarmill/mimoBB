@@ -54,13 +54,15 @@ if isnumeric(norm_type)
         weighted = ~isequal(w, 1);    
         G = G./w;
         if norm_type == Inf
-            %L infinity (corners of ball)
+            %L infinity (corners of ball)                        
             if isreal(G)
-                a = sign(G);
+                a = sign(G);                
             else
                 %normalized phase
                 a = G./abs(G);
             end
+            
+            a(abs(G)<=1e-6) = 0;
         elseif norm_type == 1
             %L1 norm (sparse vectors)
             a = sparse(size(G, 1), 1);
