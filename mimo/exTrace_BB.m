@@ -64,18 +64,19 @@ n=ss(ssest(fft(zn),nx,'feed',1,'ts',zn.Ts,ssestOptions('enforce',1)));
 nt=ss(ssest(zn,nx,'feed',1,'ts',zn.Ts,ssestOptions('enforce',1)));
 fprintf('done.\n')
 fprintf('Reducing model order...')
-sysr=balred(ss(syse),nx,balredOptions('State','truncate'));
+%sysr=balred(ss(syse),nx,balredOptions('State','truncate'));
+
 z2 = iddata(out.y,z.u,1);
 sysr2=n4sid(z2,nx, 'Feed', 1);
 fprintf('done.\n')
 
 out.Results = struct('In',In,'z',z,'zn',zn,...
-   'syse',syse,'sysr',sysr,'sysr2', sysr2,...
+   'syse',syse,'sysr2', sysr2,...
    'sys_tfest_fd',m,'sys_tfest_td',mt,...
    'sys_ssest_fd',n,'sys_ssest_td',nt);
 
 disp('-----------------------------------------')
-[~,fit] = compare(z,m,mt,n,nt,syse,sysr,sysr2,'init','z');
+[~,fit] = compare(z,m,mt,n,nt,syse,sysr2,'init','z');
 fprintf('Error norm: %g, Fits (last 2 rows are ours): \n',(norm(e)^2)/2)
 disp(cell2mat(fit')')
 disp('-----------------------------------------')

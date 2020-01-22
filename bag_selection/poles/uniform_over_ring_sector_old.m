@@ -2,7 +2,7 @@
 % defined by rho1 <= |p| <= rho2 and sector of +/- MaxAngle*2*pi
 
 
-function p = uniform_over_ring_sector(rho1,rho2,n,MaxAngle)
+function p = uniform_over_ring_sector_old(rho1,rho2,n,MaxAngle)
 
 
 u = (rho2 - rho1) * rand(n, 1) + rho1;

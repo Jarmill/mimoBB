@@ -78,8 +78,10 @@ end
 
 %Formulate the least squares operators and paramters
 %system to output wrt. input and its adjoint
-A  = @(x) mimo_A(x, np, nu, ny, Ns, F, ha);
-At = @(r) mimo_At(r,np, nu, ny, Ns, F, ha);
+%A  = @(x) mimo_A(x, np, nu, ny, Ns, F, ha);
+%At = @(r) mimo_At(r,np, nu, ny, Ns, F, ha);
+A  = @(x) mimo_A2(x, np, nu, ny, Ns, F, ha);
+At = @(r) mimo_At2(r,np, nu, ny, Ns, F, ha);
 
 b = reshape(y, Ns*ny, 1);
 
