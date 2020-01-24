@@ -49,9 +49,6 @@ In = struct('ym',yn,'u',u,'Ts',1,'ImpRespArray',ha,'PoleArray',p,...
 
 out = atomic_LTI_BB(In,opt); In.h0 = out.h;
 
-%I have absolutely no idea what these below operations are doing.
-%Task for another day.
-%Num = permute(mat2cell(out.h,Ns,ones(1,ny),ones(1,nu)),[2 3 1]);
 Num = out.h';
 Num = cellfun(@(x)x.',Num,'uni',0);
 syse = tf(Num,num2cell(ones(ny,nu)),1,'var','z^-1');

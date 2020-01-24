@@ -7,8 +7,7 @@ b = reshape(b, Ns, ny);
 Atb = zeros(np*nu*ny, 1);
 
 %weighting term
-%f = Tr(E' W E)
-%    W = (E'E)^-{1}
+%f = T
 if nargin < 8
     b = b * Wt;
 end

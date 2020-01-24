@@ -18,14 +18,8 @@
 % m_pole = Number of poles to try @ each iteration
 % h0     = (Optional) Initial value of the solution
 
-%% Options
-% 1a. MLE: Trace vs Det
-% 1b. Worst case: Inf-norm
-% 2. IC
-% 3. Missing data
-% 4. time and freq data
-% 5. Constraints: Damping, Natural frequency, Max Overshoot, Bandwidth, DC
-%    gain, frequency weight, frequency bounds
+
+
 
 function out = atomic_LTI_BB(In,opt)
 y = In.ym;
@@ -83,6 +77,7 @@ end
 %At = @(r) mimo_At(r,np, nu, ny, Ns, F, ha);
 A  = @(x) mimo_A2(x, np, nu, ny, Ns, F, ha);
 At = @(r) mimo_At2(r,np, nu, ny, Ns, F, ha);
+%At = @(r) mimo_At2(r,np, nu, ny, Ns, F, ha, Wt);
 
 b = reshape(y, Ns*ny, 1);
 
