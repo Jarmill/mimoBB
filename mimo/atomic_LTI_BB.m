@@ -54,7 +54,8 @@ np = size(p, 2);
 
 g = In.PoleGroups;
 g_hot = ind2vec(g)'; %one-hot encoding of groups
-g_offset = (0: (ny*nu-1))*np;
+%g_offset = (0: (ny*nu-1))*np;
+%g_offset = 0:(nu*ny-1);
 Ngroups = max(g);
 
 w.groups = cell(Ngroups, 1);
@@ -72,7 +73,7 @@ for gi = 1:Ngroups
         w.order(gi) = 2;
     end
     
-    ind_gi = i_curr+g_offset;
+    ind_gi = (i_curr-1)*ny*nu+(1:ny*nu);
     w.groups{gi} = ind_gi(:);    
 end
 
