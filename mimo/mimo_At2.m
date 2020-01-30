@@ -9,7 +9,7 @@ Atb = zeros(np*nu*ny, 1);
 %weighting term
 %f = Tr(E' W E)
 %    W = (E'E)^-{1}
-if nargin < 8
+if nargin >= 8
     b = b * Wt;
 end
 
