@@ -27,7 +27,7 @@ u = In.u;
 
 
 tau = opt.tau;
-t_max = opt.MaxIter;
+t_max = opt.MaxIterTrace;
 [Ns,ny] = size(y);
 nu = size(u,2);
 

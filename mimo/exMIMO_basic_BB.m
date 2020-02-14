@@ -1,5 +1,5 @@
-% 2=outut, 3-input MIMO state-space (shared pole) LTI identification under
-% atomic norm constraints. No extra demans are placed on the model other
+% 2-output, 3-input MIMO state-space (shared pole) LTI identification under
+% atomic norm constraints. No extra demands are placed on the model other
 % than fitting the measured output data in the trace sense, that is minimize
 % trace(EE') under atomic norm constraint on each impulse response. E is
 % Ns-by-ny matrix, where Ns := number of observations, ny := number of
@@ -8,8 +8,8 @@
 addpath ..
 close all
 
-Ns = 1000; nu = 3; ny = 2; nx = 4;
-SNR = 60; % signal_var/noise_var
+Ns = 200; nu = 3; ny = 2; nx = 5;
+SNR = 30; % signal_var/noise_var
 opt = sisoAtomOptions;
 opt.ShowProgressPlot = true;
 opt.IncludeConstant = true;
@@ -17,15 +17,16 @@ opt.ModelType = "ss";
 opt.SearchMethod = "grad";
 opt.Type = "rational"; 
 if opt.Type=="rational"
-   opt.MaxIter = 400;
+   opt.MaxIterTrace = 400;
    opt.NumAtoms = 500;
 else   
    % not implemented yet
    %
 end
 
-rho = 0.8; % spectral radius
+rho = 0.97; % spectral radius
 opt.r1 = rho; % is this cheating or reasonable prior knowledge
+bw = 0.1;
 
 %% Example 1:
 rng default
@@ -35,16 +36,18 @@ sys = utGenExampleSystem(rho,ny,nu,nx);
 
 %opt.tau = 62;
 %opt.tau = 400;
-opt.tau = 350;
+%opt.tau = 350;
+opt.tau = 100;
 
 
 opt.NumAtoms = 200;
-opt.MaxIter = 800;
+opt.MaxIterTrace = 800;
 opt.ShowProgressPlot = false;
 opt.SearchMethod = "grad";
 opt.Randomize = true;
 opt.AwayStepOnNeedBasis = true;
-out = exTrace_BB(sys,Ns,SNR,opt); % target cost: 83202.8
+
+out = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
 utGenAnalysisPlots(out,sys) % quality analysis
 % 
 % 

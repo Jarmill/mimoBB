@@ -4,8 +4,10 @@
 % objective is trace(E*E'*W) where W is a weighting matrix. By default W =
 % eye(ny).
 
-function out = exTrace_BB(sys,Ns,SNR,opt)
+function out = exTrace_BB(sys,Ns,SNR,InputBWFraction,opt)
 close all
+[z,zn,noise,ny,nu,nx] = utGenData(sys,SNR,InputBWFraction,2*Ns);
+%{
 [ny,nu] = size(sys);
 nx = order(sys);
 s = sqrt(db2mag(SNR));
@@ -18,6 +20,11 @@ for ky = 1:ny
 end
 z = iddata(y,u,1);
 zn = iddata(yn,u,1);
+%}
+ze = zn(1:Ns);
+yn = ze.y;
+u = ze.u;
+y =  z(1:Ns).y;
 
 TargetCost = norm(yn-y)^2/2;
 fprintf('--------------------------------------------\n')
@@ -49,6 +56,9 @@ In = struct('ym',yn,'u',u,'Ts',1,'ImpRespArray',ha,'PoleArray',p,...
 
 out = atomic_LTI_BB(In,opt); In.h0 = out.h;
 
+%I have absolutely no idea what these below operations are doing.
+%Task for another day.
+%Num = permute(mat2cell(out.h,Ns,ones(1,ny),ones(1,nu)),[2 3 1]);
 Num = out.h';
 Num = cellfun(@(x)x.',Num,'uni',0);
 syse = tf(Num,num2cell(ones(ny,nu)),1,'var','z^-1');
@@ -59,18 +69,19 @@ m=tf(tfest(fft(zn),nx,nx,'feed',1,'ts',zn.Ts,tfestOptions('enforce',1)));
 mt=tf(tfest(zn,nx,nx,'feed',1,'ts',zn.Ts,tfestOptions('enforce',1)));
 n=ss(ssest(fft(zn),nx,'feed',1,'ts',zn.Ts,ssestOptions('enforce',1)));
 nt=ss(ssest(zn,nx,'feed',1,'ts',zn.Ts,ssestOptions('enforce',1)));
-fprintf('done.\n')
-fprintf('Reducing model order...')
+nss=ss(ssregest(zn,nx,'feed',1,'ts',zn.Ts));
+%fprintf('done.\n')
+%fprintf('Reducing model order...')
 %sysr=balred(ss(syse),nx,balredOptions('State','truncate'));
-
-z2 = iddata(out.y,z.u,1);
+z2 = iddata(out.y,u,1);
 sysr2=n4sid(z2,nx, 'Feed', 1);
 fprintf('done.\n')
 
 out.Results = struct('In',In,'z',z,'zn',zn,...
    'syse',syse,'sysr2', sysr2,...
    'sys_tfest_fd',m,'sys_tfest_td',mt,...
-   'sys_ssest_fd',n,'sys_ssest_td',nt);
+   'sys_ssest_fd',n,'sys_ssest_td',nt,...
+   'sys_ssregest_td',nss);
 
 disp('-----------------------------------------')
 [~,fit] = compare(z,m,mt,n,nt,syse,sysr2,'init','z');
