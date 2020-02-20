@@ -26,23 +26,10 @@ y = In.ym;
 u = In.u;
 
 
-
 tau = opt.tau;
 t_max = opt.MaxIterTrace;
 [Ns,ny] = size(y);
 nu = size(u,2);
-
-Y = fft(y, Ns, 1);
-U = fft(u, Ns, 1);
-
-Gref = zeros(Ns, nu, ny);
-
-%this is inefficient, probably a one line command exists
-for ku = 1:nu
-    for ky = 1:ny
-        Gref(:, ku, ky) = Y(:, ny)./U(:, nu);
-    end
-end
 
 
 %Toeplitz the input for fast multiplication
@@ -53,6 +40,15 @@ for ku = 1:nu
    %matrix-vector toeplitz multiplication:
    %y2 = toeplitzmult2(F, u);
 end
+
+U = cell(1,nu);
+for ku = 1:nu    
+   %Tu{ku} = toeplitz(u(:,ku) ,[u(1,ku);zeros(Ns-1,1)]);
+   U{ku}  = fft(u, Nsamples, 
+   %matrix-vector toeplitz multiplication:
+   %y2 = toeplitzmult2(F, u);
+end
+
 
 %Process the poles into groups for sum-of-norms regularization
 p =  In.PoleArray;
@@ -97,12 +93,7 @@ At = @(r) mimo_At_sys(r,np, nu, ny, Ns, F, ha, f);
 
 %At = @(r) mimo_At2(r,np, nu, ny, Ns, F, ha, Wt);
 
-b_time = reshape(y, Ns*ny, 1);
-
-b_freq = squeeze(reshape(G_ref, [], 1, 1));
-
-b = b_time;
-%something about reshaping?
+b = reshape(y, Ns*ny, 1);
 
 BB_opt.num_var = nu*ny*np;
 BB_opt.tau = tau;
