@@ -32,7 +32,7 @@ fprintf('Actual residue norm: %g\n',TargetCost)
 fprintf('--------------------------------------------\n')
 
 pp = pole(sys);
-[ha,p, scales, groups] = createAtoms(Ns,opt);
+[ha,p, scales, groups, f] = createAtoms(Ns,opt);
 pH = cell(ny,nu);
 if opt.ShowProgressPlot   
    pos = cell(ny,nu);
@@ -52,7 +52,7 @@ if opt.ShowProgressPlot
    end
 end
 In = struct('ym',yn,'u',u,'Ts',1,'ImpRespArray',ha,'PoleArray',p,...
-   'PoleGroups', groups, 'TargetCost',TargetCost,'pH',{pH});
+   'PoleGroups', groups, 'FreqRespArray', f, 'TargetCost',TargetCost,'pH',{pH});
 
 out = atomic_LTI_BB(In,opt); In.h0 = out.h;
 

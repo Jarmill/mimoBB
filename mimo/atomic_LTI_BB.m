@@ -25,8 +25,6 @@ function out = atomic_LTI_BB(In,opt)
 y = In.ym;
 u = In.u;
 
-
-
 tau = opt.tau;
 t_max = opt.MaxIterTrace;
 [Ns,ny] = size(y);
@@ -34,16 +32,6 @@ nu = size(u,2);
 
 Y = fft(y, Ns, 1);
 U = fft(u, Ns, 1);
-
-Gref = zeros(Ns, nu, ny);
-
-%this is inefficient, probably a one line command exists
-for ku = 1:nu
-    for ky = 1:ny
-        Gref(:, ku, ky) = Y(:, ny)./U(:, nu);
-    end
-end
-
 
 %Toeplitz the input for fast multiplication
 F = cell(1,nu);
@@ -54,9 +42,12 @@ for ku = 1:nu
    %y2 = toeplitzmult2(F, u);
 end
 
+
+
 %Process the poles into groups for sum-of-norms regularization
 p =  In.PoleArray;
 ha = In.ImpRespArray;
+f  = In.FreqRespArray;
 np = size(p, 2);
 
 g = In.PoleGroups;
@@ -86,22 +77,48 @@ end
 
 %Formulate the least squares operators and paramters
 %system to output wrt. input and its adjoint
+
+%Time domain only
 %A  = @(x) mimo_A(x, np, nu, ny, Ns, F, ha);
 %At = @(r) mimo_At(r,np, nu, ny, Ns, F, ha);
 
-%A  = @(x) mimo_A2(x, np, nu, ny, Ns, F, ha);
-%At = @(r) mimo_At2(r,np, nu, ny, Ns, F, ha);
+A  = @(x) mimo_A2(x, np, nu, ny, Ns, F, ha);
+At = @(r) mimo_At2(r,np, nu, ny, Ns, F, ha);
 
-A  = @(x) mimo_A_sys(x, np, nu, ny, Ns, F, ha, f);
-At = @(r) mimo_At_sys(r,np, nu, ny, Ns, F, ha, f);
 
-%At = @(r) mimo_At2(r,np, nu, ny, Ns, F, ha, Wt);
+%cleverly design weighting functions
+W = ones(Ns, nu, ny);
+
+
+%Frequency response for each system
+%A  = @(x) mimo_sys_A(x, np, nu, ny, Ns, F, ha, f, U, W);
+%At = @(r) mimo_sys_At(r,np, nu, ny, Ns, F, ha, f, U, W);
+
+
 
 b_time = reshape(y, Ns*ny, 1);
 
-b_freq = squeeze(reshape(G_ref, [], 1, 1));
+%b_freq = squeeze(reshape(G_ref, [], 1, 1));
+
+%b_freq = repmat(Y, 1, 1, nu);
+%
+
+%I really hope this works
+%want to copy Y, slicing by indices
+%probably easier to write it out or keep everything as arrays
+%or just let reshape take care of everything
+b_freq = kron(reshape(permute(Y, [2,1]), [], 1), [1;1;1]);
+%b_freq = squeeze(reshape(repmat(permute(Y, [2,1]), 2,1,1), [], 1));
+%
+%b_freq = squeeze(reshape(b_freq, 1, 1 ,[] ));
 
 b = b_time;
+%b = [b_time; b_freq];
+
+%Weighting function?
+
+
+
 %something about reshaping?
 
 BB_opt.num_var = nu*ny*np;
@@ -146,17 +163,28 @@ end
 out.iter = length(run_log.time);
 out.cost = norm(Ax - b)^2/2;
 
+
+%reweighting?
+delta = 1e-4;
 out.group_active =  zeros(Ngroups, 1);
+out.weights_new = [];
 for gi = 1:Ngroups
     g_curr = w.groups{gi};    
     
     if any(x_final(g_curr))
-        out.group_active(gi) = w.order(gi);
+        out.group_active(end+1) = gi;
+        out.weights_new(end+1) = 1/(delta + max(x_final(g_curr)));
+        group_poles(gi) = w.order(gi);
     end
     
 end
 
+
 out.system_order = sum(out.group_active);
+
+gaa = any(In.PoleGroups == out.group_active, 1);
+out.poles_active = In.PoleArray(gaa)';
+
 
 %h_svd = svd(hankel_mo(h(2:min(1000,N),:)'));
 %out.svd = h_svd(1:min(15,length(h_svd)))';

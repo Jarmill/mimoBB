@@ -1,4 +1,4 @@
-function [Ac] = mimo_sys_A(c,np, nu, ny, Ns, F, ha, f, W)
+function [Ac] = mimo_sys_A(c,np, nu, ny, Ns, F, ha, f, U, W)
 %linear operator for response at output of subsystems with respect to
 %input. Used in c -> Ac in error and gradient computation
 
@@ -11,6 +11,7 @@ function [Ac] = mimo_sys_A(c,np, nu, ny, Ns, F, ha, f, W)
 %   F:  FFT for Toeplitz of input u
 %   ha: Pole dictionary in time
 %   f:  Pole dictionary in frequency
+%   U:  FFT of input u
 %   W:  Weighting functions for each I/O pair
 
 
@@ -36,7 +37,8 @@ for i = 1:ny
         
         c_curr = c (ind_curr);
         fc = f * c_curr;
-        wfc = W(:, j, i).*fc;
+        ufc = U(:, j) .* fc;
+        wfc = W(:, j, i).*ufc;
         Ac_freq(:, j, i) = wfc;
     end
 end
