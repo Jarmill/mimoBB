@@ -45,9 +45,10 @@ end
 
 
 %Process the poles into groups for sum-of-norms regularization
-p =  In.PoleArray;
+p  = In.PoleArray;
 ha = In.ImpRespArray;
 f  = In.FreqRespArray;
+W  = In.FreqWeight;
 np = size(p, 2);
 
 g = In.PoleGroups;
@@ -78,25 +79,33 @@ end
 %Formulate the least squares operators and paramters
 %system to output wrt. input and its adjoint
 
-%Time domain only
-%A  = @(x) mimo_A(x, np, nu, ny, Ns, F, ha);
-%At = @(r) mimo_At(r,np, nu, ny, Ns, F, ha);
-
-A  = @(x) mimo_A2(x, np, nu, ny, Ns, F, ha);
-At = @(r) mimo_At2(r,np, nu, ny, Ns, F, ha);
-
-
-%cleverly design weighting functions
-W = ones(Ns, nu, ny);
-
-
-%Frequency response for each system
-%A  = @(x) mimo_sys_A(x, np, nu, ny, Ns, F, ha, f, U, W);
-%At = @(r) mimo_sys_At(r,np, nu, ny, Ns, F, ha, f, U, W);
-
-
-
 b_time = reshape(y, Ns*ny, 1);
+
+%Frequency response penalization
+Wdim = length(size(W));
+
+
+%check the b_freq calculations
+
+if Wdim == 3
+    %IO (weighting function for each input/output pair)
+    A  = @(x) mimo_io_A(x, np, nu, ny, Ns, F, ha, f, U, W);
+    At = @(r) mimo_io_At(r,np, nu, ny, Ns, F, ha, f, U, W);
+    b_freq = complex_unfold(kron(reshape(permute(Y, [2,1]), [], 1), ones(nu, 1)), 1);
+elseif Wdim == 2
+    %Output (weighting function for each output)
+    A  = @(x) mimo_output_A(x, np, nu, ny, Ns, F, ha, f, U, W);
+    At = @(r) mimo_output_At(r,np, nu, ny, Ns, F, ha, f, U, W);
+    b_freq = complex_unfold(reshape(permute(Y, [2,1]), [], 1));
+else   
+    %Time (no frequency penalization)
+    A  = @(x) mimo_A2(x, np, nu, ny, Ns, F, ha);
+    At = @(r) mimo_At2(r,np, nu, ny, Ns, F, ha);
+    b_freq = [];
+end
+
+
+
 
 %b_freq = squeeze(reshape(G_ref, [], 1, 1));
 
@@ -107,13 +116,13 @@ b_time = reshape(y, Ns*ny, 1);
 %want to copy Y, slicing by indices
 %probably easier to write it out or keep everything as arrays
 %or just let reshape take care of everything
-b_freq = kron(reshape(permute(Y, [2,1]), [], 1), [1;1;1]);
+%b_freq = kron(reshape(permute(Y, [2,1]), [], 1), [1;1;1]);
 %b_freq = squeeze(reshape(repmat(permute(Y, [2,1]), 2,1,1), [], 1));
 %
 %b_freq = squeeze(reshape(b_freq, 1, 1 ,[] ));
 
-b = b_time;
-%b = [b_time; b_freq];
+
+b = [b_time; b_freq];
 
 %Weighting function?
 
@@ -141,11 +150,26 @@ out.Atoms = S_final;
 out.AtomCoeff = c_final;
 out.run_log = run_log;
 
+
+%output from data
 Ax = A(x_final);
 %h_all = A(x_final)
 
-out.y = reshape(Ax, Ns, ny);
+%time
+y_time = b(1:(Ns*ny));
+out.y = reshape(y_time, Ns, ny);
 
+%Frequency
+y_freq_real = b(Ns*ny + 1:end);
+y_freq = complex_fold(y_freq_real, 1);
+
+if Wdim == 3
+    out.f = reshape(y_freq, Ns, nu, ny);
+elseif Wdim == 2
+    out.f = reshape(y_freq, Ns, ny);
+else
+    out.f = [];
+end
 %determine output
 x_coeff = reshape(x_final, np, nu, ny);
 

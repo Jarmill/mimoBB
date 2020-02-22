@@ -51,8 +51,15 @@ if opt.ShowProgressPlot
       end
    end
 end
+
+
+%Need to cleverly design weighting functions (to do)
+
+W = opt.FreqWeight;
+
 In = struct('ym',yn,'u',u,'Ts',1,'ImpRespArray',ha,'PoleArray',p,...
-   'PoleGroups', groups, 'FreqRespArray', f, 'TargetCost',TargetCost,'pH',{pH});
+   'PoleGroups', groups, 'FreqRespArray', f, 'FreqWeight', W, ...
+'TargetCost',TargetCost,'pH',{pH});
 
 out = atomic_LTI_BB(In,opt); In.h0 = out.h;
 

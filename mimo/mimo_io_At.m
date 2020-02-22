@@ -1,4 +1,4 @@
-function [Atb] = mimo_sys_At(b,np, nu, ny, Ns, F, ha, f, U, W, Wt)
+function [Atb] = mimo_io_At(b,np, nu, ny, Ns, F, ha, f, U, W, Wt)
 %adjoint linear operator for response at output of subsystems with respect 
 %to input. Used in b -> A'b in gradient computation
 
@@ -23,12 +23,16 @@ if nargin >= 11
     b_time = b_time * Wt;
 end
 
-b_freq = b(Ns*ny + 1:end);
+Atb_time = mimo_At2(b_time,np, nu, ny, Ns, F, ha);
+Atb = Atb_time;
+
+
+b_freq_real = b(Ns*ny + 1:end);
+b_freq = complex_fold(b_freq_real, 1);
+
 
 b_freq = reshape(b_freq, Ns, nu, ny);
 
-Atb_time = mimo_At2(b_time,np, nu, ny, Ns, F, ha);
-Atb = Atb_time;
 
 %weighting term
 %f = Tr(E' W E)

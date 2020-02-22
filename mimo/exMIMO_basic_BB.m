@@ -8,7 +8,8 @@
 addpath ..
 close all
 
-Ns = 200; nu = 3; ny = 2; nx = 5;
+%Ns = 200; nu = 3; ny = 2; nx = 5;
+Ns = 200; nu = 1; ny = 1; nx = 5;
 SNR = 30; % signal_var/noise_var
 opt = sisoAtomOptions;
 opt.ShowProgressPlot = true;
@@ -16,6 +17,9 @@ opt.IncludeConstant = true;
 opt.ModelType = "ss"; 
 opt.SearchMethod = "grad";
 opt.Type = "rational"; 
+
+opt.Freq = "time";
+
 if opt.Type=="rational"
    opt.MaxIterTrace = 400;
    opt.NumAtoms = 500;
@@ -46,6 +50,10 @@ opt.ShowProgressPlot = false;
 opt.SearchMethod = "grad";
 opt.Randomize = true;
 opt.AwayStepOnNeedBasis = true;
+
+
+W = ones(Ns, nu, ny);
+opt.FreqWeights = W;
 
 out = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
 utGenAnalysisPlots(out,sys) % quality analysis

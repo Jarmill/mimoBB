@@ -1,4 +1,4 @@
-function [Ac] = mimo_sys_A(c,np, nu, ny, Ns, F, ha, f, U, W)
+function [Ac] = mimo_output_A(c,np, nu, ny, Ns, F, ha, f, U, W)
 %linear operator for response at output of subsystems with respect to
 %input. Used in c -> Ac in error and gradient computation
 
@@ -28,19 +28,24 @@ function [Ac] = mimo_sys_A(c,np, nu, ny, Ns, F, ha, f, U, W)
 
 Ac_time = mimo_A2(c, np, nu, ny, Ns, F, ha);
 
-Ac_freq = zeros(Ns, nu, ny);
+Ac_freq = zeros(Ns, ny);
 
 %no addition going on here
 for i = 1:ny
+    Ac_freq_curr = zeros(Ns, 1);
     for j = 1:nu
         ind_curr = ny*nu*(0:(np-1)) + nu*(i-1) + j;
         
         c_curr = c (ind_curr);
         fc = f * c_curr;
         ufc = U(:, j) .* fc;
-        wfc = W(:, j, i).*ufc;
-        Ac_freq(:, j, i) = wfc;
+        wfc = W(:, i).*ufc;
+        Ac_freq_curr = Ac_freq + wfc;
     end
+    Ac_freq(:, i) = Ac_freq_curr;
 end
 
-Ac = [Ac_time; squeeze(reshape(Ac_freq, [], 1, 1))];
+Ac_freq =  squeeze(reshape(Ac_freq, [], 1, 1));
+Ac_freq_real = complex_unfold(Ac_freq, 1);
+
+Ac = [Ac_time; Ac_freq_real];
