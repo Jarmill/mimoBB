@@ -49,13 +49,19 @@ p  = In.PoleArray;
 ha = In.ImpRespArray;
 f  = In.FreqRespArray;
 W  = In.FreqWeight;
-np = size(p, 2);
+np = length(p);
 
 g = In.PoleGroups;
 g_hot = ind2vec(g)'; %one-hot encoding of groups
+Ngroups = max(g);
+if isfield(In, 'PoleGroupWeights')
+    gw =  In.PoleGroupWeights;
+else
+    gw = ones(Ngroups, 1);
+end
 %g_offset = (0: (ny*nu-1))*np;
 %g_offset = 0:(nu*ny-1);
-Ngroups = max(g);
+
 
 w.groups = cell(Ngroups, 1);
 w.weights = zeros(Ngroups, 1);
@@ -64,11 +70,11 @@ for gi = 1:Ngroups
     i_curr = find(g_hot(:, gi));
     %penalize the use of second-order poles
     if length(i_curr) == 1
-        w.weights(gi) = 1;
+        w.weights(gi) = 1*gw(gi);
         w.order(gi) = 1;
     else
         %w.weights(gi) = sqrt(2); %sqrt(2)?
-        w.weights(gi) = 2; %sqrt(2)?
+        w.weights(gi) = 2*gw(gi); %sqrt(2)?
         w.order(gi) = 2;
     end
     
@@ -83,6 +89,9 @@ b_time = reshape(y, Ns*ny, 1);
 
 %Frequency response penalization
 Wdim = length(size(W));
+if isempty(W)
+    Wdim = 0;
+end
 
 
 %check the b_freq calculations
@@ -91,12 +100,17 @@ if Wdim == 3
     %IO (weighting function for each input/output pair)
     A  = @(x) mimo_io_A(x, np, nu, ny, Ns, F, ha, f, U, W);
     At = @(r) mimo_io_At(r,np, nu, ny, Ns, F, ha, f, U, W);
-    b_freq = complex_unfold(kron(reshape(permute(Y, [2,1]), [], 1), ones(nu, 1)), 1);
+    Y_rep = repmat(Y, 1, 1, nu);
+    Y_rep = permute(Y_rep, [1, 3, 2]);
+    b_freq = complex_unfold(squeeze(reshape(Y_rep, [], 1, 1)));
+    
+    %b_freq = complex_unfold(kron(reshape(permute(Y, [2,1]), [], 1), ones(nu, 1)), 1);
 elseif Wdim == 2
     %Output (weighting function for each output)
     A  = @(x) mimo_output_A(x, np, nu, ny, Ns, F, ha, f, U, W);
     At = @(r) mimo_output_At(r,np, nu, ny, Ns, F, ha, f, U, W);
-    b_freq = complex_unfold(reshape(permute(Y, [2,1]), [], 1));
+    %b_freq = complex_unfold(reshape(permute(Y, [2,1]), [], 1));
+    b_freq = complex_unfold(reshape(Y, [], 1));
 else   
     %Time (no frequency penalization)
     A  = @(x) mimo_A2(x, np, nu, ny, Ns, F, ha);
@@ -189,26 +203,38 @@ out.cost = norm(Ax - b)^2/2;
 
 
 %reweighting?
-delta = 1e-4;
-out.group_active =  zeros(Ngroups, 1);
-out.weights_new = [];
+%delta = 1e-4;
+delta = 0;
+out.group_active =  [];
+out.PoleGroupWeights_old = gw;
+%out.PoleGroupWeights_new= [];
+weights_new = []
 for gi = 1:Ngroups
     g_curr = w.groups{gi};    
-    
-    if any(x_final(g_curr))
+    x_curr = x_final(g_curr);
+    x_max = norm(x_curr, 'inf');
+    if x_max
         out.group_active(end+1) = gi;
-        out.weights_new(end+1) = 1/(delta + max(x_final(g_curr)));
-        group_poles(gi) = w.order(gi);
-    end
-    
+        
+        weights_new(end+1) = 1/(delta +  x_max);
+    end            
 end
 
+weights_new  = weights_new * opt.tau/length(weights_new);
+out.PoleGroupWeights_new = weights_new;
+%normalize new set of weights (?)
+%not sure if this is correct normalization
+%out.PoleGroupWeights_new = out.PoleGroupWeights_new*...
+%    length(out.PoleGroupWeights_new)/sum(out.PoleGroupWeights_new);
 
-out.system_order = sum(out.group_active);
+out.system_order = sum(w.order(out.group_active));
 
-gaa = any(In.PoleGroups == out.group_active, 1);
-out.poles_active = In.PoleArray(gaa)';
+out.poles_active_ind = any(In.PoleGroups == out.group_active', 1);
+out.poles_active = In.PoleArray(out.poles_active_ind)';
 
+% new pole groups
+[C, ia, ic] = unique(In.PoleGroups(out.poles_active_ind));
+out.PoleGroups_new = ic';
 
 %h_svd = svd(hankel_mo(h(2:min(1000,N),:)'));
 %out.svd = h_svd(1:min(15,length(h_svd)))';

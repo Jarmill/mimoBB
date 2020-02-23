@@ -8,8 +8,8 @@
 addpath ..
 close all
 
-%Ns = 200; nu = 3; ny = 2; nx = 5;
-Ns = 200; nu = 1; ny = 1; nx = 5;
+Ns = 200; nu = 3; ny = 2; nx = 5;
+%Ns = 5; nu = 1; ny = 1; nx = 5;
 SNR = 30; % signal_var/noise_var
 opt = sisoAtomOptions;
 opt.ShowProgressPlot = true;
@@ -18,7 +18,7 @@ opt.ModelType = "ss";
 opt.SearchMethod = "grad";
 opt.Type = "rational"; 
 
-opt.Freq = "time";
+opt.FreqWeight = [];
 
 if opt.Type=="rational"
    opt.MaxIterTrace = 400;
@@ -28,7 +28,8 @@ else
    %
 end
 
-rho = 0.97; % spectral radius
+%rho = 0.97; % spectral radius
+rho = 0.6; % spectral radius
 opt.r1 = rho; % is this cheating or reasonable prior knowledge
 bw = 0.1;
 
@@ -41,6 +42,7 @@ sys = utGenExampleSystem(rho,ny,nu,nx);
 %opt.tau = 62;
 %opt.tau = 400;
 %opt.tau = 350;
+%opt.tau = 200;
 opt.tau = 100;
 
 
@@ -52,8 +54,9 @@ opt.Randomize = true;
 opt.AwayStepOnNeedBasis = true;
 
 
-W = ones(Ns, nu, ny);
-opt.FreqWeights = W;
+%W = ones(Ns, nu, ny);
+opt.FreqWeight = [];
+opt.ReweightRounds = 6;
 
 out = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
 utGenAnalysisPlots(out,sys) % quality analysis

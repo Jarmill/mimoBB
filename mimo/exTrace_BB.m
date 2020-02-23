@@ -61,7 +61,26 @@ In = struct('ym',yn,'u',u,'Ts',1,'ImpRespArray',ha,'PoleArray',p,...
    'PoleGroups', groups, 'FreqRespArray', f, 'FreqWeight', W, ...
 'TargetCost',TargetCost,'pH',{pH});
 
-out = atomic_LTI_BB(In,opt); In.h0 = out.h;
+p_curr  = p;
+f_curr  = f;
+ha_curr = ha;
+groups_curr = groups;
+
+for i = 1:(opt.ReweightRounds + 1)
+    
+    In.ImpRespArray = ha_curr;
+    In.FreqRespArray = f_curr;
+    
+    out = atomic_LTI_BB(In,opt); 
+    In.h0 = out.h;
+    In.PoleGroupWeights = out.PoleGroupWeights_new;
+    In.PoleGroups = out.PoleGroups_new;
+    In.PoleArray = out.poles_active;
+    active_ind = out.poles_active_ind;    
+    
+    ha_curr =  ha_curr(:, active_ind);
+    f_curr  =  f_curr(:, active_ind);        
+end
 
 %I have absolutely no idea what these below operations are doing.
 %Task for another day.

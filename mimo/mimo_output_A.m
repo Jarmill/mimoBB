@@ -40,12 +40,12 @@ for i = 1:ny
         fc = f * c_curr;
         ufc = U(:, j) .* fc;
         wfc = W(:, i).*ufc;
-        Ac_freq_curr = Ac_freq + wfc;
+        Ac_freq_curr = Ac_freq(:, i) + wfc;
     end
     Ac_freq(:, i) = Ac_freq_curr;
 end
 
-Ac_freq =  squeeze(reshape(Ac_freq, [], 1, 1));
+Ac_freq =  reshape(Ac_freq, [], 1);
 Ac_freq_real = complex_unfold(Ac_freq, 1);
 
 Ac = [Ac_time; Ac_freq_real];
