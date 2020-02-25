@@ -101,7 +101,7 @@ if Wdim == 3
     A  = @(x) mimo_io_A(x, np, nu, ny, Ns, F, ha, f, U, W);
     At = @(r) mimo_io_At(r,np, nu, ny, Ns, F, ha, f, U, W);
     Y_rep = repmat(Y, 1, 1, nu);
-    Y_rep = permute(Y_rep, [1, 3, 2]);
+    Y_rep = W.*permute(Y_rep, [1, 3, 2]);
     b_freq = complex_unfold(squeeze(reshape(Y_rep, [], 1, 1)));
     
     %b_freq = complex_unfold(kron(reshape(permute(Y, [2,1]), [], 1), ones(nu, 1)), 1);
@@ -110,7 +110,7 @@ elseif Wdim == 2
     A  = @(x) mimo_output_A(x, np, nu, ny, Ns, F, ha, f, U, W);
     At = @(r) mimo_output_At(r,np, nu, ny, Ns, F, ha, f, U, W);
     %b_freq = complex_unfold(reshape(permute(Y, [2,1]), [], 1));
-    b_freq = complex_unfold(reshape(Y, [], 1));
+    b_freq = complex_unfold(reshape(W.*Y, [], 1));
 else   
     %Time (no frequency penalization)
     A  = @(x) mimo_A2(x, np, nu, ny, Ns, F, ha);
@@ -208,7 +208,7 @@ delta = 0;
 out.group_active =  [];
 out.PoleGroupWeights_old = gw;
 %out.PoleGroupWeights_new= [];
-weights_new = []
+weights_new = [];
 for gi = 1:Ngroups
     g_curr = w.groups{gi};    
     x_curr = x_final(g_curr);

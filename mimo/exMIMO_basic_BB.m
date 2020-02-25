@@ -8,7 +8,7 @@
 addpath ..
 close all
 
-Ns = 200; nu = 3; ny = 2; nx = 5;
+Ns = 1000; nu = 3; ny = 2; nx = 5;
 %Ns = 5; nu = 1; ny = 1; nx = 5;
 SNR = 30; % signal_var/noise_var
 opt = sisoAtomOptions;
@@ -41,12 +41,12 @@ sys = utGenExampleSystem(rho,ny,nu,nx);
 
 %opt.tau = 62;
 %opt.tau = 400;
-%opt.tau = 350;
+opt.tau = 350;
 %opt.tau = 200;
-opt.tau = 100;
+%opt.tau = 100;
 
 
-opt.NumAtoms = 200;
+opt.NumAtoms = 300;
 opt.MaxIterTrace = 800;
 opt.ShowProgressPlot = false;
 opt.SearchMethod = "grad";
@@ -59,7 +59,7 @@ opt.FreqWeight = [];
 opt.ReweightRounds = 6;
 
 out = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
-utGenAnalysisPlots(out,sys) % quality analysis
+%utGenAnalysisPlots(out,sys) % quality analysis
 % 
 % 
 % %% Example 2: repeated real pole (hard to get good results)
