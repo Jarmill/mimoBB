@@ -1,0 +1,31 @@
+This directory contains MATLAB functions for the fast multiplication
+of a Toeplitz matrix times a vector.  By using these routines you can
+avoid storing the entire matrix (using two vectors of lenght n rather
+than a matrix of size n*n), and also dramatically speedup the
+multiplication.
+
+The simplest case involves the multiplication of a Toeplitz matrix
+times a single vector.  To multiply toeplitz(a,b) times x, use
+
+>> y=toeplitzmult(a,b,x)   
+
+If you have a single matrix that will be multiplied times many
+vectors, then use
+
+>> F=toeplitzmultaux(a,b);
+>> y1=toeplitzmult2(F,x1);
+>> y2=toeplitzmult2(F,x2);
+>> y3=toeplitzmult2(F,x3);
+...
+ 
+The script example.m demonstrates the use of these functions.
+
+Note that this code works correctly with matrices and vectors that
+are real or complex.  However, due to round-off errors, the product
+might have a small imaginary component even though a,b, and x are
+all real.  To correct this, simply use
+ 
+  real(toeplitz(a,b,x))
+
+A good introduction to how these algorithms work can be found in the
+book "Matrix Computations, 3rd ed." by Golub and Van Loan.  
