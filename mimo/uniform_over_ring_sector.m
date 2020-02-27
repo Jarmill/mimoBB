@@ -1,0 +1,35 @@
+% Generate n uniformly randomly distributed complex numbers inside the ring
+% defined by rho1 <= |p| <= rho2 and sector of MinAngle to MaxAngle
+% This code does not force set symmetry.
+
+
+function p = uniform_over_ring_sector(rho1,rho2,n,MinAngle,MaxAngle,IncludeConstant)
+
+Offset = nargin>5 && IncludeConstant;
+n0 = n;
+n = 10*n0;
+Range = (rand(1,n)-0.5);
+theta = MinAngle + (MaxAngle-MinAngle)*Range; 
+theta(1:floor(n/10)) = 0; % at least 1/10th are pure real
+theta = theta(randperm(n)); % scramble 0 angle entries
+r = sqrt(rand(1,n))*(rho2-rho1);
+p = (r+rho1).*cos(theta)+1j*(r+rho1).*sin(theta);
+I = abs(angle(p))<=MaxAngle & abs(angle(p))>=MinAngle & abs(p)<=rho2 & abs(p)>=rho1;
+p = p(I);
+p = p(1:min(n0,end));
+if Offset
+   p(end) = 1;
+end
+
+%{
+figure
+r = exp(1i*2*pi*(0:100)/100);
+plot(real(p),imag(p),'b*',...
+   real(r*rho1),imag(r*rho1),'k--',real(r*rho2),imag(r*rho2),'k--',...
+   real(r),imag(r),'k')
+%hold on
+axis('square')
+xlim([-1.1 1.1])
+ylim([-1.1 1.1])
+%}
+end
