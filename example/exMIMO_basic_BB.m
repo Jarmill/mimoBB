@@ -22,7 +22,7 @@ opt.FreqWeight = [];
 
 if opt.Type=="rational"
    opt.MaxIterTrace = 400;
-   opt.NumAtoms = 500;
+   opt.NumAtoms = 600;
 else   
    % not implemented yet
    %
