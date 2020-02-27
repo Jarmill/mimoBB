@@ -26,7 +26,7 @@ function [Ac] = mimo_output_A(c,np, nu, ny, Ns, F, ha, f, U, W)
 
 %different order of variables, should be more amenable to randomization
 
-Ac_time = mimo_A2(c, np, nu, ny, Ns, F, ha);
+Ac_time = mimo_A(c, np, nu, ny, Ns, F, ha);
 
 Ac_freq = zeros(Ns, ny);
 

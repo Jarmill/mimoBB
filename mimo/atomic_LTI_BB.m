@@ -52,7 +52,9 @@ W  = In.FreqWeight;
 np = length(p);
 
 g = In.PoleGroups;
+g_rep = squeeze(reshape(repmat(g, [1, nu, ny]), [], 1, 1))';
 g_hot = ind2vec(g)'; %one-hot encoding of groups
+g_rep_hot = ind2vec(g_rep)';
 Ngroups = max(g);
 if isfield(In, 'PoleGroupWeights')
     gw =  In.PoleGroupWeights;
@@ -68,6 +70,7 @@ w.weights = zeros(Ngroups, 1);
 w.order = zeros(Ngroups, 1);
 for gi = 1:Ngroups
     i_curr = find(g_hot(:, gi));
+    i_rep_curr = find(g_rep_hot(:, gi));
     %penalize the use of second-order poles
     if length(i_curr) == 1
         w.weights(gi) = 1*gw(gi);
@@ -78,8 +81,9 @@ for gi = 1:Ngroups
         w.order(gi) = 2;
     end
     
-    ind_gi = (i_curr-1)*ny*nu+(1:ny*nu);
-    w.groups{gi} = ind_gi(:);    
+    w.groups{gi} = i_rep_curr;
+%     ind_gi = (i_curr-1)*ny*nu+(1:ny*nu);
+%     w.groups{gi} = ind_gi(:);    
 end
 
 %Formulate the least squares operators and paramters
@@ -113,8 +117,8 @@ elseif Wdim == 2
     b_freq = complex_unfold(reshape(W.*Y, [], 1));
 else   
     %Time (no frequency penalization)
-    A  = @(x) mimo_A2(x, np, nu, ny, Ns, F, ha);
-    At = @(r) mimo_At2(r,np, nu, ny, Ns, F, ha);
+    A  = @(x) mimo_A(x, np, nu, ny, Ns, F, ha);
+    At = @(r) mimo_At(r,np, nu, ny, Ns, F, ha);
     b_freq = [];
 end
 
@@ -185,14 +189,14 @@ else
     out.f = [];
 end
 %determine output
-x_coeff = reshape(x_final, np, nu, ny);
+x_coeff = reshape(full(x_final), np, nu, ny);
 
 out.Coeff = cell(nu, ny);
 out.h = cell(nu, ny);
 
 for j = 1:nu
     for i = 1:ny
-        x_curr = x_coeff(:, j, i);
+        x_curr = sparse(x_coeff(:, j, i));
         out.Coeff{j, i} = x_curr;
         out.h{j, i} = ha*x_curr;
     end

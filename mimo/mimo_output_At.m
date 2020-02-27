@@ -29,7 +29,7 @@ b_freq = complex_fold(b_freq_real, 1);
 
 b_freq = reshape(b_freq, Ns, ny);
 
-Atb_time = mimo_At2(b_time,np, nu, ny, Ns, F, ha);
+Atb_time = mimo_At(b_time,np, nu, ny, Ns, F, ha);
 Atb = Atb_time;
 
 %weighting term
@@ -37,7 +37,7 @@ Atb = Atb_time;
 %    W = (E'E)^-{1}
 for i = 1:ny
     for j = 1:nu    
-        b_curr  = b_freq(:, j);
+        b_curr  = b_freq(:, i);
         wb = conj(W(:, j)).*b_curr;
         uwb = conj(U(:, j)) .* wb;
         fuwb = f'*uwb;

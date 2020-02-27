@@ -82,9 +82,8 @@ for i = 1:(opt.ReweightRounds + 1)
     f_curr  =  f_curr(:, active_ind);        
 end
 
-%I have absolutely no idea what these below operations are doing.
-%Task for another day.
-%Num = permute(mat2cell(out.h,Ns,ones(1,ny),ones(1,nu)),[2 3 1]);
+
+if opt.Compare
 Num = out.h';
 Num = cellfun(@(x)x.',Num,'uni',0);
 syse = tf(Num,num2cell(ones(ny,nu)),1,'var','z^-1');
@@ -114,3 +113,4 @@ disp('-----------------------------------------')
 fprintf('Error norm: %g, Fits (last 2 rows are ours): \n',(norm(e)^2)/2)
 disp(cell2mat(fit')')
 disp('-----------------------------------------')
+end

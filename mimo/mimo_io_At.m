@@ -23,7 +23,7 @@ if nargin >= 11
     b_time = b_time * Wt;
 end
 
-Atb_time = mimo_At2(b_time,np, nu, ny, Ns, F, ha);
+Atb_time = mimo_At(b_time,np, nu, ny, Ns, F, ha);
 Atb = Atb_time;
 
 
