@@ -30,15 +30,22 @@ Ac_time = mimo_A(c, np, nu, ny, Ns, F, ha);
 
 Ac_freq = zeros(Ns, nu, ny);
 
+c = reshape(full(c), [np, nu, ny]);
+
 %no addition going on here
 for i = 1:ny
     for j = 1:nu
-        ind_curr = ny*nu*(0:(np-1)) + nu*(i-1) + j;
+        %I think this is where I was indexing incorrectly 
+%        ind_curr = ny*nu*(0:(np-1)) + nu*(i-1) + j;
+
         
-        c_curr = c (ind_curr);
+%        c_curr = c (ind_curr);
+        c_curr = c(:, j, i);
         fc = f * c_curr;
-        ufc = U(:, j) .* fc;
-        wfc = W(:, j, i).*ufc;
+        
+        %ufc = U(:, j) .* fc;
+        %wfc = W(:, j, i).*ufc;
+        wfc = W(:, j, i) .* fc;
         Ac_freq(:, j, i) = wfc;
     end
 end

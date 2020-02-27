@@ -38,20 +38,24 @@ b_freq = reshape(b_freq, Ns, nu, ny);
 %f = Tr(E' W E)
 %    W = (E'E)^-{1}
 
+%Atb = zeros(np, nu, ny);
+Atb = reshape(Atb, np, nu, ny);
+
 for j = 1:nu
     for i = 1:ny
         b_curr  = b_freq(:, j, i);
         wb = conj(W(:, j, i)).*b_curr;
-        uwb = conj(U(:, j)) .* wb;
-        fuwb = f'*uwb;
+        %uwb = conj(U(:, j)) .* wb;
+        %fuwb = f'*uwb;
+        fwb = f'* wb;
         
-        %Atb(:, j, i) = rub_curr;
-        ind_curr = ny*nu*(0:(np-1))  + nu*(i-1) + j;
-        Atb(ind_curr) = Atb(ind_curr) + fuwb;
+        Atb(:, j, i) = Atb(:, j, i) + fwb;
+        %ind_curr = ny*nu*(0:(np-1))  + nu*(i-1) + j;
+        %Atb(ind_curr) = Atb(ind_curr) + fuwb;
     end
 end
 
 Atb = real(Atb);
-%Atb = squeeze(reshape(Atb, [], 1 ,1));
+Atb = squeeze(reshape(Atb, [], 1 ,1));
 
 end

@@ -104,9 +104,16 @@ if Wdim == 3
     %IO (weighting function for each input/output pair)
     A  = @(x) mimo_io_A(x, np, nu, ny, Ns, F, ha, f, U, W);
     At = @(r) mimo_io_At(r,np, nu, ny, Ns, F, ha, f, U, W);
-    Y_rep = repmat(Y, 1, 1, nu);
-    Y_rep = W.*permute(Y_rep, [1, 3, 2]);
-    b_freq = complex_unfold(squeeze(reshape(Y_rep, [], 1, 1)));
+    %Y_rep = repmat(Y, 1, 1, nu);
+    %Y_rep = W.*permute(Y_rep, [1, 3, 2]);
+    G_ref = zeros(length(Y),  nu, ny);
+    for i = 1:ny
+        for j = 1:nu
+            G_ref(:, j, i) = Y(:, i)./U(:, j);
+        end
+    end
+    b_freq = complex_unfold(squeeze(reshape(G_ref, [], 1, 1)));
+    %b_freq = complex_unfold(squeeze(reshape(Y_rep, [], 1, 1)));
     
     %b_freq = complex_unfold(kron(reshape(permute(Y, [2,1]), [], 1), ones(nu, 1)), 1);
 elseif Wdim == 2
