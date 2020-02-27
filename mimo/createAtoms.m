@@ -100,43 +100,9 @@ end
 
 return
 
-%alternatively use frequency coordinates available from sample
-
-%I have no idea if this is correct, really hope it is.
-%Should we be using fftshift?
-
-w_base = exp(-2*1j*pi/NumSamples);
-
-%I still have no idea
-%w = linspace(0, NumSamples-1, NumSamples)'/NumSamples;
-w = w_base.^((0:(NumSamples-1))');
-ew = exp(-2*pi*1.0j*w);
-
-f_real_denom = 1 - ew*p_real;
-f_comp_denom = 1 - 2*ew*real(exp(-p_comp_0)) + ew*real(exp(-2*p_comp_0));
-f_sin_num    = ew*imag(exp(-p_comp_0));
-f_cos_num    = 1 - ew*real(exp(-p_comp_0));
-
-f_real = 1./f_real_denom;
-f_sin = f_sin_num./f_comp_denom;
-f_cos = f_cos_num./f_comp_denom;
-
-f = [f_real, f_cos(:, 1:nc0), f_sin(:, 1:nc0), f_cos(:,  nc0+1:end), f_sin(:, nc0+1:end)];
-f = f.*scales;
-%which atoms are associated together?
-%complex poles will have their complex conjugate present
-groups = [1:nr0, nr0+(1:nr0), 2*nr0 + kron([1,1], 1:nc0), 2*nr0 + nc0 + kron([1,1], 1:nc0)];
-
-if C
-   p = [p, pc];
-   h = [h, ones(size(h,1),1)/L];
-   groups = [groups, 2*(nr0+nc0)+1];
-   f = [f, [L; zeros(size(f,1)-1,1)]];
-end
-
 % delays
-hh = [diag(ones(1,10),-1);zeros(NumSamples-11,11)];
-hh = hh(:,1:end-1)./(1:10);
+%hh = [diag(ones(1,10),-1);zeros(NumSamples-11,11)];
+%hh = hh(:,1:end-1)./(1:10);
 %h = [h,hh];
 %p = [p, zeros(1,10)];
 
