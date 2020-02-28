@@ -49,9 +49,7 @@ classdef sisoAtomOptions <handle
      
       
       %Frequency domain parameters
-      FreqWeight= [];     % Weights for frequency domain fitting
-      FreqSample = [];    % frequencies to sample at
-      FreqResponse = [];  % frequency response 
+      FreqWeight= []; % Weights for frequency domain fitting
       
       % Are we minimizing the determinant criterion det(EE') or the trace
       % criterion trace(EE')? Matters only in multi-output case. 
@@ -61,7 +59,7 @@ classdef sisoAtomOptions <handle
       % matrix (ny := number of model outputs)
       Wt = 1; 
       ReweightRounds = 0;
-      
+      SampleFreq = []; %frequenci
       % Pick whther the poles should be shared among all I/O pairs during
       % estimation iterations ("ss") or can be picked separately for each
       % pair ("tf"). 
@@ -87,9 +85,6 @@ classdef sisoAtomOptions <handle
       
       % Show pole-zero map during estimation (slows things down)
       ShowProgressPlot(1,1)logical = true;
-      
-      %compare against benchmarks
-      Compare(1,1)logical = true;
       
       % lsqlin options
       LsqlinOpt = optimoptions('lsqlin','Display','none');

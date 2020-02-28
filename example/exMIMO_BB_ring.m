@@ -4,11 +4,15 @@ rng(77, 'twister')
 
 ny = size(sys, 1);
 nu = size(sys, 2);
-W = 0.1*ones(Ns, nu, ny);
+
+Nf =  128;
+W = 0.1*ones(Nf, nu, ny);
+
 opt.FreqWeight = W;
 %opt.FreqWeight = ones(Ns, ny);
-opt.Compare = 1;
-opt.tau =  9000;
+%opt.Compare = 1;
+opt.Compare = 0;
+opt.tau =  500;
 %opts.ReweightRounds = 10;
 out = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
 

@@ -28,7 +28,9 @@ function [Ac] = mimo_io_A(c,np, nu, ny, Ns, F, ha, f, U, W)
 
 Ac_time = mimo_A(c, np, nu, ny, Ns, F, ha);
 
-Ac_freq = zeros(Ns, nu, ny);
+
+Nf = size (W, 1);
+Ac_freq = zeros(Nf, nu, ny);
 
 c = reshape(full(c), [np, nu, ny]);
 

@@ -1,4 +1,4 @@
-function [h,p,scales, groups, f] = createAtoms(NumSamples,opt,G)
+function [h,p,scales, groups, f] = createAtoms(NumSamples,opt)
 %% Create Rational Atoms
 % Impulse response matrix, where each column corresponds to N-length
 % impulse response of:
@@ -40,6 +40,7 @@ elseif any(opt.Type==["spline","random"])
 end
 
 C = opt.IncludeConstant;
+FreqSample = opt.FreqSample;
 p = uniform_over_ring_sector(opt.r1,opt.r2,opt.NumAtoms,opt.phi1,opt.phi2,C);
 if C
    pc = p(end);
@@ -75,7 +76,7 @@ h = [h(:,1:2*nr0),hc1p,hc2p,hc1n,hc2n];
 h = h.*scales;
 
 %Frequency response
-w = G.Frequency;
+w = FreqSample;
 NumSamplesF = numel(w);
 z = ltipack.utGetComplexFrequencies(w,1);
 h1 = 1./(z-p(Ir));

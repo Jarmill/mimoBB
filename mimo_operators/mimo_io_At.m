@@ -31,7 +31,7 @@ b_freq_real = b(Ns*ny + 1:end);
 b_freq = complex_fold(b_freq_real, 1);
 
 
-b_freq = reshape(b_freq, Ns, nu, ny);
+b_freq = reshape(b_freq, size(f, 1), nu, ny);
 
 
 %weighting term

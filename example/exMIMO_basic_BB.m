@@ -46,7 +46,7 @@ opt.tau = 350;
 %opt.tau = 100;
 
 
-opt.NumAtoms = 300;
+opt.NumAtoms = 800;
 opt.MaxIterTrace = 800;
 opt.ShowProgressPlot = false;
 opt.SearchMethod = "grad";
@@ -56,8 +56,9 @@ opt.AwayStepOnNeedBasis = true;
 
 %W = ones(Ns, nu, ny);
 opt.FreqWeight = [];
-opt.ReweightRounds = 6;
+opt.ReweightRounds = 10;
 
+opt.Compare = 0;
 out = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
 %utGenAnalysisPlots(out,sys) % quality analysis
 % 

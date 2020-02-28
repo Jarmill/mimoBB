@@ -1,4 +1,4 @@
-%% MIMO IDENTIFICATION: L2, TIME DOMAIN
+%% MIMO IDENTIFICATION: L2, TIME and FREQUENCY DOMAINS
 % Minimize prediction error trace L2 norm for MIMO LTI identification.
 % We consider a partial fraction structure G(z) = \sum_i R_i/(z-p_i), where
 % R is residue matrix of size [ny, nu]. For mechanical structures, R is a
@@ -106,12 +106,13 @@ if Wdim == 3
     At = @(r) mimo_io_At(r,np, nu, ny, Ns, F, ha, f, U, W);
     %Y_rep = repmat(Y, 1, 1, nu);
     %Y_rep = W.*permute(Y_rep, [1, 3, 2]);
-    G_ref = zeros(length(Y),  nu, ny);
-    for i = 1:ny
-        for j = 1:nu
-            G_ref(:, j, i) = Y(:, i)./U(:, j);
-        end
-    end
+%     G_ref = zeros(size(W, 1),  nu, ny);
+%     for i = 1:ny
+%         for j = 1:nu
+%             G_ref(:, j, i) = Y(:, i)./U(:, j);
+%         end
+%     end
+    G_ref = opt.FreqResponse;
     b_freq = complex_unfold(squeeze(reshape(G_ref, [], 1, 1)));
     %b_freq = complex_unfold(squeeze(reshape(Y_rep, [], 1, 1)));
     
@@ -189,7 +190,7 @@ y_freq_real = b(Ns*ny + 1:end);
 y_freq = complex_fold(y_freq_real, 1);
 
 if Wdim == 3
-    out.f = reshape(y_freq, Ns, nu, ny);
+    out.f = reshape(y_freq, size(f, 1), nu, ny);
 elseif Wdim == 2
     out.f = reshape(y_freq, Ns, ny);
 else
