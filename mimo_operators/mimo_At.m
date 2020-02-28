@@ -3,7 +3,7 @@ function [Atb] = mimo_At(b,np, nu, ny, Ns, F, ha, Wt)
 %to input. Used in b -> A'b in gradient computation
 
 b = reshape(b, Ns, ny);
-Atb = zeros( np, nu, ny);
+Atb = zeros( ny , nu, np );
 %Atb = zeros(np*nu*ny, 1);
 
 %weighting term
@@ -18,7 +18,8 @@ for j = 1:nu
         b_curr  = b(:, i);
         ub_curr = toeplitzmult2(conj(F{j}), b_curr);
         rub_curr = ha'*ub_curr;
-        Atb(:, j, i) = rub_curr;
+        %Atb(:, j, i) = rub_curr;
+        Atb(i, j, :) = rub_curr;
         %ind_curr = ny*nu*(0:(np-1))  + nu*(i-1) + j;
         %Atb(ind_curr) = rub_curr;
     end

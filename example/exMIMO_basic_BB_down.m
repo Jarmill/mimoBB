@@ -59,7 +59,8 @@ opt.AwayStepOnNeedBasis = true;
 opt.ReweightRounds = 10;
 
 
-W = ones(Ns, nu, ny);
+%W = ones(Ns, nu, ny);
+W = ones(ny, nu, Ns);
 %opt.FreqWeight = W;
 opt.FreqWeight = [];
 

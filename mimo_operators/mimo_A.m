@@ -10,7 +10,8 @@ function [Ac] = mimo_A(c,np, nu, ny, Ns, F, ha)
 
 Ac = zeros(Ns, ny);
 
-c = reshape(full(c), [np, nu, ny]);
+%c = reshape(full(c), [np, nu, ny]);
+c = reshape(full(c), [ny, nu, np]);
 
 %c0 = [];
 %rc0 = [];
@@ -22,7 +23,7 @@ for i = 1:ny
         %ind_curr = ny*nu*(0:(np-1)) + nu*(i-1) + j;
         
         %c_curr = c (ind_curr);
-        c_curr = sparse(c(:, j, i));
+        c_curr = sparse(squeeze(c(i, j, :)));
         rc_curr = ha*c_curr;
         urc_curr = toeplitzmult2(F{j}, rc_curr);
         Ac(:, i) = Ac(:, i) + urc_curr;

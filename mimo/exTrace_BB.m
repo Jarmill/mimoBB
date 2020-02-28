@@ -28,7 +28,8 @@ y =  z(1:Ns).y;
 
 G = etfe(iddata(y,u));
 opt.FreqSample = G.Frequency;
-opt.FreqResponse = permute(G.ResponseData, [3, 2, 1]);
+%opt.FreqResponse = permute(G.ResponseData, [3, 2, 1]);
+opt.FreqResponse = G.ResponseData;
 
 TargetCost = norm(yn-y)^2/2;
 fprintf('--------------------------------------------\n')

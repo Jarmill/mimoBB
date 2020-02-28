@@ -43,7 +43,7 @@ b_freq = reshape(b_freq, ny, nu, size(f, 1));
 Atb = reshape(Atb, ny, nu, np);
 fwb = zeros(size(Atb));
 
-%could probably replace with a tensor product
+%could re
 for j = 1:nu
     for i = 1:ny
         %b_curr  = b_freq(:, j, i);
