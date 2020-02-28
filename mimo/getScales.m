@@ -23,11 +23,17 @@ Ir = imag(p)==0;
 scales1 = (1-p2(Ir))./(1-p2N(Ir).*p2(Ir));
 scales1(I(Ir)) = 1/L;
 
-a1_sq = real(a1.^2);
-c1_sq = c1.^2;
-s2 = 2*sqrt(2*Gam.*(abs(a1).^2-c1.^2));
-scales2 = 1./sqrt(2*(a1_sq + c1_sq) + s2);
-scales3 = 1./sqrt(2*(-a1_sq + c1_sq) + s2);
-scales = [scales1,scales2(~Ir),scales3(~Ir)];
+if isempty(~Ir) || all((~Ir)==0)
+    scales = scales1;
+else
+    a1_sq = real(a1.^2);
+    c1_sq = c1.^2;
+    s2 = 2*sqrt(2*Gam.*(abs(a1).^2-c1.^2));
+    scales2 = 1./sqrt(2*(a1_sq + c1_sq) + s2);
+    scales3 = 1./sqrt(2*(-a1_sq + c1_sq) + s2);
 
+    %scales = [scales1,scales2(~Ir),scales3(~Ir)];
+    scales_complex = interleave2(scales2(~Ir), scales3(~Ir));
+    scales = [scales1, scales_complex];
+end
 end
