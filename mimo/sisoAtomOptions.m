@@ -7,9 +7,9 @@ classdef sisoAtomOptions <handle
       
       % randomize atomic set over iterations
       Randomize(1,1)logical = false;
+      eedBasis(1,1)logical = false;
       
-      AwayStepOnNeedBasis(1,1)logical = false;
-      
+      AwayStepOnN
       % nature of atoms
       % rational: rational atomic set (traditional)
       % spline: first order spline atoms parameterized by 0<=alpha<=1

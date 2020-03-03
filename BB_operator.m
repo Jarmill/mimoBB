@@ -91,11 +91,19 @@ N_bag = bag_int_increase;
 
 
 %visualization
-visualize = 0;
-visualize_end = 1;
-visualize_delay = 0;
+if ~isfield(opt, 'visualize') 
+    opt.visualize = 0;
+end
 
-will_visualize = visualize || visualize_end || visualize_delay;
+if ~isfield(opt, 'visualize_end')
+    opt.visualize_end = 0;
+end
+
+if ~isfield(opt, 'visualize_delay') 
+    opt.visualize_delay = 0;
+end
+
+will_visualize = opt.visualize || opt.visualize_end || opt.visualize_delay;
 first_boundary = 0;
 
 
@@ -201,8 +209,8 @@ while ~terminate
     
     %% visualizations go here
     
-    if visualize || (terminate && visualize_end) || (visualize_delay == k)
-        %the next project: putting this into a BB_visualizer class
+    if opt.visualize || (terminate && opt.visualize_end) || (opt.visualize_delay == k)
+        %the next project: putting this into a BB_opt.visualizer class
         clf       
 
     %gradient (previous)
@@ -433,7 +441,7 @@ while ~terminate
         
         
     %look at the output
-        if visualize || (visualize_delay == k)
+        if opt.visualize || (opt.visualize_delay == k)
              keyboard;
         end
     end

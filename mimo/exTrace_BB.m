@@ -89,9 +89,11 @@ end
 
 
 if opt.Compare
-Num = out.h';
-Num = cellfun(@(x)x.',Num,'uni',0);
-syse = tf(Num,num2cell(ones(ny,nu)),1,'var','z^-1');
+% Num = out.h';
+% Num = cellfun(@(x)x.',Num,'uni',0);
+% syse = tf(Num,num2cell(ones(ny,nu)),1,'var','z^-1');
+
+syse = out.sys_out;
 
 e = In.ym-out.y;
 fprintf('Generating benchmark results ...')
