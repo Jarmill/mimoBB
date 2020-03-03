@@ -1,4 +1,4 @@
-function [Atb] = mimo_io_At(b,np, nu, ny, Ns, F, ha, f, U, W, Wt)
+function [Atb] = mimo_io_At(b,np, nu, ny, Ns, F, ha, f, W, Wt)
 %adjoint linear operator for response at output of subsystems with respect 
 %to input. Used in b -> A'b in gradient computation
 
@@ -10,7 +10,6 @@ function [Atb] = mimo_io_At(b,np, nu, ny, Ns, F, ha, f, U, W, Wt)
 %   ha: Pole dictionary in time
 %   f:  Pole dictionary in frequency
 %   W:  Weighting functions for each I/O pair
-%   U:  FFT of input u
 %   Wt: weigthing term in determinant minimization
 
 %b = reshape(b, Ns, ny);

@@ -60,7 +60,8 @@ classdef sisoAtomOptions <handle
       % Trace weighting matrix when IsDet is FALSE. Specify as ny-by-ny psd
       % matrix (ny := number of model outputs)
       Wt = 1; 
-      ReweightRounds = 0;
+      RandomRounds = 0; %Number of rounds of randomization after the initial pick of poles
+      ReweightRounds = 0; %Number of rounds of reweighted heuristic to sparsify the poles
       
       % Pick whther the poles should be shared among all I/O pairs during
       % estimation iterations ("ss") or can be picked separately for each

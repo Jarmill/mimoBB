@@ -22,7 +22,7 @@ classdef bag_manager
         
         %cluster vs. subspace
         use_cluster; 
-        
+           
     end
     
     methods

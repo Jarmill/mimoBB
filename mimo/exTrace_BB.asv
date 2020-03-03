@@ -70,7 +70,7 @@ In.ImpRespArray = ha;
 In.FreqRespArray = f;
 
 out = atomic_LTI_BB(In,opt); 
-fprintf('Cost: %0.3e \t Time: %0.4f \n',out.time, out.cost)
+fprintf('Cost: %0.3e \n',out.cost)
 
 %Multiple rounds of randomizing poles
 for i = 1:(opt.RandomRounds)

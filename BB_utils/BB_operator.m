@@ -38,15 +38,6 @@ w = opt.w;
 N = opt.num_var;
 norm_type = opt.norm_type;
 
-x = sparse(N, 1);
-on_boundary = 0;
-
-Ax = A(x);
-res = Ax - b;
-grad = At(res) + delta*x;
-error_orig = b'*b;
-error_old = error_orig;
-error_gap = Inf;
 
 terminate = 0;
 k = 1;
@@ -68,9 +59,40 @@ else
     b_bash = b;
 end
 
-BM = bash_manager(b_bash, tau, delta, norm_type, w, FCFW);
-y = [];
-c = [];
+
+
+
+
+if isfield(opt, 'warm_start')
+    BM =  opt.warm_start.bash_manager;
+
+    y  = opt.warm_start.y;     
+    c  = BM.get_c(y);
+    x  = BM.get_x(y);
+    Ax = BM.get_Ax(y);
+    
+    on_boundary = BM.update_ext.exterior;
+    
+    atomic_norm_start = tau*sum(c);
+else
+    y = [];
+    c = [];
+    x = sparse(N, 1);
+    Ax = A(x); 
+
+    BM = bash_manager(b_bash, tau, delta, norm_type, w, FCFW);
+            
+    on_boundary = 0;   
+    
+    atomic_norm_start = 0;
+end
+
+res = Ax - b;
+grad = At(res) + delta*x;
+
+error_orig = norm(res, 2)^2 + delta*norm(x, 2);
+error_old = error_orig;
+error_gap = Inf;
 
 if BM.bagger.sparse_vec && ~is_complex
     bag_int_increase = 8;
@@ -131,7 +153,7 @@ end
 tic;
 %% main bag and bash loop
 while ~terminate  
-    [BM, S_bag] = BM.bag_atoms(grad, x, N_bag);
+    [BM, S_bag, DG] = BM.bag_atoms(grad, x, N_bag);
     
     %if the bag is empty, then no more atoms can be added to the system
     %this is a generalized termination condition
@@ -145,7 +167,7 @@ while ~terminate
             grad_new = grad;
         end
     else
-        DG = real(-grad' * (tau*S_bag(:, 1) - x));
+        %DG = real(-grad' * (tau*S_bag(:, 1) - x));
         AS_bag = A(S_bag);
         
         if is_complex
@@ -334,7 +356,7 @@ while ~terminate
     %Atomic Norm
         subplot(4, 2, 4)
         hold on
-        plot(0:length(run_log.atomic_norm), [0 run_log.atomic_norm])
+        plot(0:length(run_log.atomic_norm), [atomic_norm_start run_log.atomic_norm])
         %stem(x_new, '.')
         if first_boundary
                 plot([first_boundary, first_boundary], ylim, ':b')
@@ -465,6 +487,20 @@ end
 x_final = BM.get_x(y);
 S_final = BM.get_S();
 c_final = BM.get_c(y);
+
+if isfield(opt, 'export_warm_start')
+    run_log.warm_start = struct;
+    run_log.warm_start.bash_manager = BM;
+    run_log.warm_start.y = y;
+end
+
+% run_log.warm_start.S = S_final;
+% run_log.warm_start.AS =  BM.get_AS();
+% run_log.warm_start.K = BM.K;
+% run_log.warm_start.rhs = rhs;
+% run_log.warm_start.y = y;
+% run_log.warm_start.update_ext = BM.update_ext;
+% run_log.warm_start.bagger = BM.bagger;
 
 if is_complex
     x_final = complex_fold(x_final, 1);

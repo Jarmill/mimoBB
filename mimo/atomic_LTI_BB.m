@@ -30,9 +30,6 @@ t_max = opt.MaxIterTrace;
 [Ns,ny] = size(y);
 nu = size(u,2);
 
-Y = fft(y, Ns, 1);
-U = fft(u, Ns, 1);
-
 %Toeplitz the input for fast multiplication
 F = cell(1,nu);
 for ku = 1:nu    
@@ -103,8 +100,8 @@ end
 
 if Wdim == 3
     %IO (weighting function for each input/output pair)
-    A  = @(x) mimo_io_A(x, np, nu, ny, Ns, F, ha, f, U, W);
-    At = @(r) mimo_io_At(r,np, nu, ny, Ns, F, ha, f, U, W);
+    A  = @(x) mimo_io_A(x, np, nu, ny, Ns, F, ha, f, W);
+    At = @(r) mimo_io_At(r,np, nu, ny, Ns, F, ha, f, W);
     %Y_rep = repmat(Y, 1, 1, nu);
     %Y_rep = W.*permute(Y_rep, [1, 3, 2]);
 %     G_ref = zeros(size(W, 1),  nu, ny);
@@ -120,19 +117,18 @@ if Wdim == 3
     %b_freq = complex_unfold(kron(reshape(permute(Y, [2,1]), [], 1), ones(nu, 1)), 1);
 elseif Wdim == 2
     %Output (weighting function for each output)
+    %don't use this
     A  = @(x) mimo_output_A(x, np, nu, ny, Ns, F, ha, f, U, W);
     At = @(r) mimo_output_At(r,np, nu, ny, Ns, F, ha, f, U, W);
     %b_freq = complex_unfold(reshape(permute(Y, [2,1]), [], 1));
-    b_freq = complex_unfold(reshape(W.*Y, [], 1));
+    %b_freq = complex_unfold(reshape(W.*Y, [], 1));
+    b_freq = complex_unfold(reshape(W, [], 1));
 else   
     %Time (no frequency penalization)
     A  = @(x) mimo_A(x, np, nu, ny, Ns, F, ha);
     At = @(r) mimo_At(r,np, nu, ny, Ns, F, ha);
     b_freq = [];
 end
-
-
-
 
 %b_freq = squeeze(reshape(G_ref, [], 1, 1));
 
@@ -166,12 +162,19 @@ BB_opt.norm_type = Inf;
 BB_opt.is_complex = 0;
 BB_opt.visualize = 0;
 
+if isfield(In, 'warm_start')
+     if isstruct(In.warm_start)
+         BB_opt.warm_start = In.warm_start;
+         BB_opt.warm_start.bash_manager.bagger.w = w;
+     end     
+     BB_opt.export_warm_start = 1;
+end
 
 tic
 %Run the optimization routine
 [x_final, S_final, c_final, run_log] = BB_operator(A, At, b, BB_opt);
 
-toc
+out.time = toc;
 
 
 out.Coeff0 = x_final;
@@ -185,11 +188,13 @@ Ax = A(x_final);
 %h_all = A(x_final)
 
 %time
-y_time = b(1:(Ns*ny));
+%y_time = b(1:(Ns*ny));
+y_time = Ax(1:(Ns*ny));
 out.y = reshape(y_time, Ns, ny);
 
 %Frequency
-y_freq_real = b(Ns*ny + 1:end);
+%y_freq_real = b(Ns*ny + 1:end);
+y_freq_real = Ax(Ns*ny + 1:end);
 y_freq = complex_fold(y_freq_real, 1);
 
 if Wdim == 3

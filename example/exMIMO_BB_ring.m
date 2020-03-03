@@ -14,7 +14,8 @@ opt.FreqWeight = W;
 %opt.Compare = 1;
 opt.Compare = 0;
 opt.tau =  600;
-opt.ReweightRounds = 6;
+%opt.ReweightRounds = 6;
+opt.RandomRounds = 15;
 out = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
 
 figure(2)
