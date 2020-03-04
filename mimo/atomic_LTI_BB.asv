@@ -234,7 +234,6 @@ out.group_active =  [];
 out.PoleGroupWeights_old = gw;
 %out.PoleGroupWeights_new= [];
 weights_new = [];
-x_max = [];
 residues = [];
 
 out.sys_out= 0;
@@ -243,11 +242,10 @@ z = tf('z', 1);
 for gi = 1:Ngroups
     g_curr = w.groups{gi};    
     x_curr = x_final(g_curr);       
-    x_max_curr = norm(x_curr, 'inf');
+    x_max = norm(x_curr, 'inf');
         
-    if x_max_curr
-        x_max(end+1) = x_max_curr;
-        weights_new(end+1) = w.order(gi)/(delta +  x_max_curr);
+    if x_max
+        weights_new(end+1) = 1/(delta +  x_max);
         out.group_active(end+1) = gi;
         
         %Return the resultant system
@@ -285,7 +283,7 @@ out.system_order = sum(w.order(out.group_active));
 
 %weights_new  = weights_new * opt.tau/length(weights_new);
 %out.PoleGroupWeights_new = weights_new;
-out.PoleGroupWeights_new = weights_new * opt.tau/ out.system_order;
+out.PoleGroupWeights_new = weights_new * opt.tau/ opt.system_order;
 %normalize new set of weights (?)
 %not sure if this is correct normalization
 %out.PoleGroupWeights_new = out.PoleGroupWeights_new*...

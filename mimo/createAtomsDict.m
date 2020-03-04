@@ -1,4 +1,4 @@
-function [h,p, f, scales, groups] = createAtomsDict(p,w, C, Ns)
+function [h,p, f, scales, groups] = createAtomsDict(p,w, C, Ns, time_samples)
 %CREATEATOMSDICT Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -6,17 +6,23 @@ function [h,p, f, scales, groups] = createAtomsDict(p,w, C, Ns)
 %Input:
 %   p:  Poles to generate responses
 %   w:  Frequencies to sample in response
-%   Ns: Number of samples (assume unit sample rate) 
 %   C:  Include constant?
+%   Ns: Number of samples (assume unit sample rate) 
+%   time_samples: indices for non-uniform sampling time
 %
 %Output:
 %   h:  Impulse response
 %   f:  Frequency response
 %   scales: Hankel Norms of response (normalization factors)
 %   groups: Which poles are clustered together?
+
 if C
    pc = p(end);
    p = p(1:end-1);
+end
+
+if nargin < 5
+    time_samples = [];
 end
 
 
@@ -42,7 +48,12 @@ scales = [scales(1:nr0),scales(1:nr0),scales(nr0+1:end),scales(nr0+1:end)];
 
 %Time response
 k = numel(p2);
-h = [zeros(1,k);ones(1,k);cumprod(p2(ones(1,Ns-2),:))];
+
+if length(time_samples) > 1
+    h = [zeros(1,k);ones(1,k);p2.^(time_samples)];
+else
+    h = [zeros(1,k);ones(1,k);cumprod(p2(ones(1,Ns-2),:))];
+end
 Ic = (2*nr0+1):numel(p2);
 hc1 = 2*real(h(:,Ic));
 hc1p = hc1(:,1:nc0);
