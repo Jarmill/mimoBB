@@ -52,36 +52,28 @@ g = In.PoleGroups;
 g_rep_0 = permute(repmat(g', [1, nu, ny]), [3,2,1]);
 g_rep = squeeze(reshape(g_rep_0, 1, [], 1));
 g_hot = ind2vec(g); %one-hot encoding of groups
+g_order = sum(g_hot, 2);
 g_rep_hot = ind2vec(g_rep);
 Ngroups = max(g);
 if isfield(In, 'PoleGroupWeights')
     gw =  In.PoleGroupWeights;
 else
-    gw = ones(Ngroups, 1);
+    gw = g_order;	
 end
 %g_offset = (0: (ny*nu-1))*np;
 %g_offset = 0:(nu*ny-1);
 
 
 w.groups = cell(Ngroups, 1);
-w.weights = zeros(Ngroups, 1);
-w.order = zeros(Ngroups, 1);
+%w.weights = zeros(Ngroups, 1);
+w.weights = gw;
+w.order = g_order;
+
+
 for gi = 1:Ngroups
-    i_curr = find(g_hot(gi, :));
     i_rep_curr = find(g_rep_hot(gi, :));
-    %penalize the use of second-order poles
-    if length(i_curr) == 1
-        w.weights(gi) = 1*gw(gi);
-        w.order(gi) = 1;
-    else
-        %w.weights(gi) = sqrt(2); %sqrt(2)?
-        w.weights(gi) = 2*gw(gi); %sqrt(2)?
-        w.order(gi) = 2;
-    end
     
     w.groups{gi} = i_rep_curr;
-%     ind_gi = (i_curr-1)*ny*nu+(1:ny*nu);
-%     w.groups{gi} = ind_gi(:);    
 end
 
 %Formulate the least squares operators and paramters
@@ -293,7 +285,7 @@ out.PoleGroupWeights_new = weights_new * opt.tau/ out.system_order;
 
 
 
- out.poles_active_ind = any(In.PoleGroups == out.group_active', 1);
+out.poles_active_ind = any(In.PoleGroups == out.group_active', 1);
 out.poles_active = In.PoleArray(out.poles_active_ind)';
 
 out.w = w;
