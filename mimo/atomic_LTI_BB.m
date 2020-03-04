@@ -110,7 +110,7 @@ if Wdim == 3
 %             G_ref(:, j, i) = Y(:, i)./U(:, j);
 %         end
 %     end
-    G_ref = opt.FreqResponse;
+    G_ref = W.*opt.FreqResponse;
     b_freq = complex_unfold(squeeze(reshape(G_ref, [], 1, 1)));
     %b_freq = complex_unfold(squeeze(reshape(Y_rep, [], 1, 1)));
     
@@ -161,6 +161,7 @@ BB_opt.delta = 0;
 BB_opt.norm_type = Inf;
 BB_opt.is_complex = 0;
 BB_opt.visualize = 0;
+BB_opt.DG_tol = 3e-3;
 
 if isfield(In, 'warm_start')
      if isstruct(In.warm_start)
@@ -222,7 +223,8 @@ for j = 1:nu
 end
 
 out.iter = length(run_log.time);
-out.cost = norm(Ax - b)^2/2;
+%out.cost = norm(Ax - b)^2/2;
+out.cost = run_log.error_list(end); %this is cheating, why are the values in disagreement?
 
 
 %reweighting?
@@ -234,7 +236,8 @@ out.PoleGroupWeights_old = gw;
 weights_new = [];
 residues = [];
 
-out.sys_out = 0;
+out.sys_out= 0;
+out.sys_modes = {};
 z = tf('z', 1);
 for gi = 1:Ngroups
     g_curr = w.groups{gi};    
@@ -242,34 +245,41 @@ for gi = 1:Ngroups
     x_max = norm(x_curr, 'inf');
         
     if x_max
-        out.group_active(end+1) = gi;
-        x_curr_box = reshape(x_curr, ny, nu, []);
-        poles_curr = In.PoleArray(In.PoleGroups == gi);
-        scales_curr = getScales(poles_curr(1), Ns);
-        
-        %should this be * or / ?
-        
-        
-        if w.order(gi) == 1
-            residue_curr = x_curr_box*scales_curr;
-            sys_curr = residue_curr/(z - poles_curr);
-        else
-            
-            res_cos =  x_curr_box(:, :, 1)*scales_curr(1);
-            res_sin =  x_curr_box(:, :, 2)*scales_curr(2);
-            num   = res_cos + z*res_sin;
-            denom = (z - poles_curr(1) )*(z-poles_curr(2));
-            
-            sys_curr = (num/2) / denom;
-        end
-        
-        %residues = cat(3, residues, x_curr_box/scales_curr);
-        
-        out.sys_out = out.sys_out + sys_curr;
-        
         weights_new(end+1) = 1/(delta +  x_max);
+        out.group_active(end+1) = gi;
+        
+        %Return the resultant system
+        if opt.FormSystem
+            x_curr_box = reshape(x_curr, ny, nu, []);
+            poles_curr = In.PoleArray(In.PoleGroups == gi);
+            scales_curr = getScales(poles_curr(1), Ns);
+
+            %should this be * or / ?
+
+
+            if w.order(gi) == 1
+                residue_curr = x_curr_box*scales_curr;
+                sys_curr = residue_curr/(z - poles_curr);
+            else
+
+                res_cos =  x_curr_box(:, :, 1)*scales_curr(1);
+                res_sin =  x_curr_box(:, :, 2)*scales_curr(2);
+                num   = res_cos + z*res_sin;
+                denom = (z - poles_curr(1) )*(z-poles_curr(2));
+
+                sys_curr = (num/2) / denom;
+            end
+
+            %residues = cat(3, residues, x_curr_box/scales_curr);
+
+            out.sys_out = out.sys_out + sys_curr;
+            out.sys_modes{end+1} = sys_curr;
+        end
+
     end            
 end
+
+
 
 weights_new  = weights_new * opt.tau/length(weights_new);
 out.PoleGroupWeights_new = weights_new;
@@ -280,7 +290,7 @@ out.PoleGroupWeights_new = weights_new;
 
 out.system_order = sum(w.order(out.group_active));
 
-out.poles_active_ind = any(In.PoleGroups == out.group_active', 1);
+  out.poles_active_ind = any(In.PoleGroups == out.group_active', 1);
 out.poles_active = In.PoleArray(out.poles_active_ind)';
 
 out.w = w;

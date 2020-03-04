@@ -62,7 +62,7 @@ classdef sisoAtomOptions <handle
       Wt = 1; 
       RandomRounds = 0; %Number of rounds of randomization after the initial pick of poles
       ReweightRounds = 0; %Number of rounds of reweighted heuristic to sparsify the poles
-      
+      FormSystem = 0;     %Form a transfer function of the system
       % Pick whther the poles should be shared among all I/O pairs during
       % estimation iterations ("ss") or can be picked separately for each
       % pair ("tf"). 

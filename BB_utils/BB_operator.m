@@ -28,10 +28,6 @@ function [x_final, S_final, c_final, run_log] = BB_operator(A, At, b, opt)
 %   run_log:    Tracking information on run
 
 %start setup of general parameters
-if nargin < 6
-    w = 1;
-end
-%number of variables
 tau = opt.tau;
 delta = opt.delta;
 w = opt.w;
@@ -74,6 +70,7 @@ if isfield(opt, 'warm_start')
     on_boundary = BM.update_ext.exterior;
     
     atomic_norm_start = tau*sum(c);
+    cardinality_start = length(c);
 else
     y = [];
     c = [];
@@ -85,12 +82,13 @@ else
     on_boundary = 0;   
     
     atomic_norm_start = 0;
+    cardinality_start = 0;
 end
 
 res = Ax - b;
 grad = At(res) + delta*x;
 
-error_orig = norm(res, 2)^2 + delta*norm(x, 2);
+error_orig = 0.5*norm(Ax-b)^2 + 0.5*delta*norm(x)^2;
 error_old = error_orig;
 error_gap = Inf;
 
@@ -123,6 +121,12 @@ end
 
 if ~isfield(opt, 'visualize_delay') 
     opt.visualize_delay = 0;
+end
+
+if isfield(opt, 'DG_tol') 
+    BM.bagger.DG_tol = opt.DG_tol;
+else
+    BM.bagger.DG_tol = 1e-4;
 end
 
 will_visualize = opt.visualize || opt.visualize_end || opt.visualize_delay;
@@ -158,8 +162,12 @@ while ~terminate
     %if the bag is empty, then no more atoms can be added to the system
     %this is a generalized termination condition
     %if isempty(S_bag) || abs(error_gap) < 1e-7
+    % k > 1 && (rank(full([S_new S_bag])) ~= (size(S_new, 2)  + 1))
     if isempty(S_bag)
         terminate = 1;
+        y_new = y;
+        error_new = error_old;
+        N_survived = 0;
         %DG = 0;        
         
         %input is all zeros, or the optimal point is 0
@@ -181,7 +189,6 @@ while ~terminate
         c_new = BM.get_c(y_new);
         
         on_boundary_new = BM.update_ext.exterior;
-        %error_new = BM.get_error(y_new);
         
         %Find statistics of output, including properties of x_new
         
@@ -449,7 +456,7 @@ while ~terminate
     %Cardinality
         subplot(4, 2, 8)
         hold on
-        plot(0:length(run_log.cardinality), [0 run_log.cardinality])
+        plot(0:length(run_log.cardinality), [cardinality_start run_log.cardinality])
         plot(run_log.num_attempted, 'xm')
         %stem(x_new, '.')
         if first_boundary
@@ -478,6 +485,7 @@ while ~terminate
         y = y_new;
         error_old = error_new;
         on_boundary = on_boundary_new;
+        S_bag_old = S_bag;
         N_bag = N_bag_next;
     end
 end

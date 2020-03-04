@@ -69,12 +69,23 @@ In = struct('ym',yn,'u',u,'Ts',1,'ImpRespArray',ha,'PoleArray',p,...
 In.ImpRespArray = ha;
 In.FreqRespArray = f;
 
+
+cost_list = [];
+
+if ~opt.RandomRounds && ~opt.ReweightRounds
+    opt.FormSystem = 1;
+end
+
 out = atomic_LTI_BB(In,opt); 
-fprintf('Cost: %0.3e \t Time: %0.4f \n',out.time, out.cost)
+cost_list_random = [cost_list; out.cost];
+fprintf('Cost: %0.3e \t Time: %0.4f \n',out.cost, out.time)
 
 %Multiple rounds of randomizing poles
+TRUE_WARM_START = 1;
+
 for i = 1:(opt.RandomRounds)
     %warm_start = out.run_log.warm_start;
+    cost_old = out.cost;
     
     active_ind = out.poles_active_ind;    
     
@@ -89,35 +100,49 @@ for i = 1:(opt.RandomRounds)
     In.PoleGroups = [out.PoleGroups_new (groups_new + max(out.PoleGroups_new))];
     In.PoleArray = [reshape(out.poles_active, 1, []) p_new];
     
-%     %prepare warm start for new set of atoms
-%     active_group_ind = arrayfun(@(i) out.w.groups{i}, out.group_active,   'UniformOutput', false);
-%     active_group_ind = cat(2, active_group_ind{:});
-%     warm_start = out.run_log.warm_start;
-%     BM = warm_start.bash_manager;
-%     S_prev = BM.get_S();
-%     atom_count = BM.update_ext.exterior ...
-%         + BM.atom_count;
-%     atom_size_max = BM.atom_size_max;
-%     S_active = S_prev(active_group_ind, :);
+    if TRUE_WARM_START
+        %prepare warm start for new set of atoms
+        active_group_ind = arrayfun(@(i) out.w.groups{i}, out.group_active,   'UniformOutput', false);
+        active_group_ind = cat(2, active_group_ind{:});
+        warm_start = out.run_log.warm_start;
+        BM = warm_start.bash_manager;
+        %S_prev = BM.get_S();
+        S_prev = BM.S;
+        atom_size_max = BM.atom_size_max;
+        S_active = S_prev(active_group_ind, :);               
+        
+        S_new = [S_active; sparse(nu*ny*length(p_new), atom_size_max)];
+        BM.S = S_new;
+
+        
+        %this is replicating the anchor atom
+        %bug fixing!
+        if BM.update_ext.exterior
+            S_anc_prev = BM.update_ext.S_anc(active_group_ind);
+            S_anc_new = [S_anc_prev; sparse(nu*ny*length(p_new), 1)];
+            BM.update_ext.S_anc = S_anc_new;
+        end
+
+
+        warm_start.bash_manager = BM;   
+        In.warm_start = warm_start;
+    end
 %     
-%     S_new = [S_active sparse(size(S_active, 1), atom_size_max - atom_count); sparse(nu*ny*length(p_new), atom_size_max)];
-%     BM.S = S_new;
-%     
-%     if BM.update_ext.exterior
-%         S_anc_prev = BM.update_ext.S_anc(active_group_ind);
-%         S_anc_new = [S_anc_prev; sparse(nu*ny*length(p_new), 1)];
-%         BM.update_ext.S_anc = S_anc_new;
-%     end
-%     
-%         
-%     warm_start.bash_manager = BM;    
-%     In.warm_start = warm_start;
+
+    if ~opt.ReweightRounds && (i == opt.RandomRounds)
+        opt.FormSystem = 1;
+    end
 % 
     out = atomic_LTI_BB(In,opt); 
-    fprintf('Cost: %0.3e \t Time: %0.4f \n',out.time, out.cost)    
+    cost_list_random = [cost_list_random; out.cost];
+    fprintf('Cost: %0.3e \t (dCost = %0.3e)  Time: %0.4f \n', out.cost, out.cost - cost_old, out.time)
+    
 end
 
+In = rmfield(In, 'warm_start');
 
+
+out.cost_list_random = cost_list_random;
 %Sparsify the resultant poles through reweighted heuristic
 for i = 1:(opt.ReweightRounds)   
     active_ind = out.poles_active_ind;    
@@ -132,9 +157,19 @@ for i = 1:(opt.ReweightRounds)
     In.PoleGroups = out.PoleGroups_new;
     In.PoleArray = out.poles_active;
     
+    if (i == opt.ReweightRounds)
+        opt.FormSystem = 1;
+    end
+    
+    
+    
     out = atomic_LTI_BB(In,opt); 
-    fprintf('Cost: %0.3e \t Time: %0.4f \n',out.time, out.cost)
+    fprintf('Cost: %0.3e \t Time: %0.4f \n', out.cost, out.time)    
 end
+
+
+%Extract system
+
 
 
 if opt.Compare

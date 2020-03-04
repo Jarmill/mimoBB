@@ -19,6 +19,7 @@ classdef bag_manager
         FCFW;
         %group lasso + partition and magic
         small_groups;
+        DG_tol;
         
         %cluster vs. subspace
         use_cluster; 
@@ -26,7 +27,7 @@ classdef bag_manager
     end
     
     methods
-        function obj = bag_manager(tau, norm_type, w, FCFW)
+        function obj = bag_manager(tau, norm_type, w, FCFW, DG_tol)
             %BAG_MANAGER Construct an instance of this class
             %   Start out with nothing
             obj.tau = tau;
@@ -36,6 +37,7 @@ classdef bag_manager
             obj.sparse_vec = (ischar(norm_type) && strcmp(norm_type, 'simp')) || ((isnumeric(norm_type) && norm_type == 1) && ~isstruct(w));
             %Fully Corrective Frank Wolfe, only add one atom at a time
             obj.FCFW = FCFW;
+            obj.DG_tol = DG_tol; %duality gap tolerance
             
             
             %for testing purposes, if input is a group, then use cluster
@@ -82,7 +84,7 @@ classdef bag_manager
                     atom = LMO_1d(-grad, obj.norm_type, obj.w);                    
                     w_dir = obj.tau*atom - x;
                     DG = -grad'*w_dir;
-                    if DG < 1e-4
+                    if DG < obj.DG_tol
                         S_bag = [];
                     else
                         S_bag = atom;

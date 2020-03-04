@@ -61,8 +61,8 @@ for j = 1:nu
         %Atb(ind_curr) = Atb(ind_curr) + fuwb;
     end
 end
-Atb = Atb + fwb;
-Atb = real(Atb);
+Atb = Atb + real(fwb);
+%Atb = real(Atb);
 Atb = squeeze(reshape(Atb, [], 1 ,1));
 
 end

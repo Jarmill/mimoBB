@@ -62,7 +62,8 @@ if isnumeric(norm_type)
                 a = G./abs(G);
             end
             
-            a(abs(G)<=1e-6) = 0;
+            %think this causes degeneracy?
+            %a(abs(G)<=1e-6) = 0;
         elseif norm_type == 1
             %L1 norm (sparse vectors)
             a = sparse(size(G, 1), 1);

@@ -52,16 +52,18 @@ classdef bash_manager
                 CS = 1;
             end            
             
-            
-            if nargin < 6
-                FCFW = 0;
-                
-                if nargin < 5
-                    w = 1;
+            if nargin < 7
+                DG_tol = 1e-4;
+                if nargin < 6
+                    FCFW = 0;
+
+                    if nargin < 5
+                        w = 1;
+                    end
                 end
             end
             
-            obj.bagger = bag_manager(tau, norm_type, w, FCFW);
+            obj.bagger = bag_manager(tau, norm_type, w, FCFW, DG_tol);
             
             %original properties
             obj.b = b;
