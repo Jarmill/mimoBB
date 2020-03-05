@@ -8,7 +8,7 @@ function [Ac] = mimo_io_A(c,np, nu, ny, Ns, F, ha, f, W)
 %   c:  coefficient vector to be multiplies
 %   [np, nu, ny]:   Number of poles (dict. entries), inputs, and ouputs
 %   Ns:             Number of samples
-%   F:  FFT for Toeplitz of input u
+%   F:  FFT for Toe plitz of input u
 %   ha: Pole dictionary in time
 %   f:  Pole dictionary in frequency
 %   W:  Weighting functions for each I/O pair

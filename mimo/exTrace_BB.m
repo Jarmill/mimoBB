@@ -36,8 +36,10 @@ fprintf('--------------------------------------------\n')
 fprintf('Actual residue norm: %g\n',TargetCost)
 fprintf('--------------------------------------------\n')
 
+
+fprintf('Starting Randomization\n')
 pp = pole(sys);
-[ha,p, scales, groups, f] = createAtoms(Ns,opt);
+[ha,p, scales, groups, f, L] = createAtoms(Ns,opt);
 pH = cell(ny,nu);
 if opt.ShowProgressPlot   
    pos = cell(ny,nu);
@@ -64,7 +66,7 @@ W = opt.FreqWeight;
 
 In = struct('ym',yn,'u',u,'Ts',1,'ImpRespArray',ha,'PoleArray',p,...
    'PoleGroups', groups, 'FreqRespArray', f, 'FreqWeight', W, ...
-'TargetCost',TargetCost,'pH',{pH}, 'warm_start', 1);
+'TargetCost',TargetCost,'pH',{pH}, 'warm_start', 1, 'ConstWeight', L);
 
 In.ImpRespArray = ha;
 In.FreqRespArray = f;
@@ -141,10 +143,11 @@ end
 
 In = rmfield(In, 'warm_start');
 
-
+fprintf('Starting Reweighting\n')
 out.cost_list_random = cost_list_random;
 %Sparsify the resultant poles through reweighted heuristic
 for i = 1:(opt.ReweightRounds)   
+    cost_old = out.cost;
     active_ind = out.poles_active_ind;    
     ha_curr =  In.ImpRespArray(:, active_ind);
     f_curr  =  In.FreqRespArray(:, active_ind); 
@@ -164,7 +167,7 @@ for i = 1:(opt.ReweightRounds)
     
     
     out = atomic_LTI_BB(In,opt); 
-    fprintf('Cost: %0.3e \t Time: %0.4f \n', out.cost, out.time)    
+    fprintf('Cost: %0.3e \t (dCost = %0.3e)  Time: %0.4f \n', out.cost, out.cost - cost_old, out.time) 
 end
 
 

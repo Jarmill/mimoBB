@@ -1,4 +1,4 @@
-function [h,p, f, scales, groups, L] = createAtomsDict(p,w, C, Ns, time_samples)
+function [h,p, f, scales, groups] = createAtomsDict(p,w, C, Ns, time_samples)
 %CREATEATOMSDICT Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -89,8 +89,8 @@ if C
    %delicate to deal with L
    p = [pc, p];
    h = [ones(size(h,1),1) ,h];
-   groups = [1, 1+groups];
-   f = [1./(z-1), f];
+   groups = [groups, 2*(nr0+nc0)+1];
+   f = [f, getScales(1,NsF)*1./(z-1)];
 end
 
 end

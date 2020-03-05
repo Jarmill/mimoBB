@@ -66,10 +66,8 @@ opt.num_var = size(NIR_active, 2);
 %reweight2
 x_ind1 = find(x_r);
 x_active1 = x_r(x_ind1);
-w_active1 = w(x_ind1);
 w01 = 1./(abs(x_active1) + epsilon);
-w1 = w01 *  (tau_max/ (w01'*abs(x_active1)));
-%w1 =  w(x_ind1);
+w1 = w01 *  (tau_max/ (w01'*x_active1));
 
 NIR_active1  = NIR_active(:, x_ind1);
 

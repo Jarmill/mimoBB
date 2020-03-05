@@ -55,25 +55,14 @@ g_hot = ind2vec(g); %one-hot encoding of groups
 g_order = sum(g_hot, 2);
 g_rep_hot = ind2vec(g_rep);
 Ngroups = max(g);
-
-%testing purposes only
-%enforce all subsystems to have the same weight
-%trying to figure out why reweighted heuristic increases error between
-%iterations, if the setpoint is feasible on both atomic balls
-SAME_WEIGHT = 0;
-
 if isfield(In, 'PoleGroupWeights')
     gw =  In.PoleGroupWeights;
-else
-    if SAME_WEIGHT 
-        gw = ones(size(g_order));
-    else
-        gw = g_order;	
-
-        if p(1) == 1
-            gw(1) = In.ConstWeight;
-        end
+    if p(1) == 1
+        gw(1) = In.ConstWeight;
     end
+else
+    %gw = g_order;	
+    gw = ones(size(g_order));
 end
 
 %deal with constant input
@@ -258,16 +247,13 @@ for gi = 1:Ngroups
         
     if x_max_curr
         x_max(end+1) = x_max_curr;
-        weights_old(end+1) = gw(gi);
-        if SAME_WEIGHT
-            weights_new(end+1) = w.order(gi)/(delta +  x_max_curr);
-        else
-            if gi == 1 && p(1) == 1
-                weights_new(end+1) = In.ConstWeight/(delta +  x_max_curr);
-            else    
-                weights_new(end+1) = w.order(gi)/(delta +  x_max_curr);
-            end
-        end       
+        weights_old(end+1) = gw(gi) ;
+%         if gi == 1 && p(1) == 1
+%             weights_new(end+1) = In.ConstWeight/(delta +  x_max_curr);
+%         else    
+%             weights_new(end+1) = w.order(gi)/(delta +  x_max_curr);
+%         end
+        weights_new(end+1) = w.order(gi)/(delta +  x_max_curr);
         out.group_active(end+1) = gi;
         
         %Return the resultant system
@@ -312,6 +298,8 @@ weight_compare = [weights_old; weights_new_norm]*x_max';
 %not sure if this is correct normalization
 %out.PoleGroupWeights_new = out.PoleGroupWeights_new*...
 %    length(out.PoleGroupWeights_new)/sum(out.PoleGroupWeights_new);
+
+
 
 out.poles_active_ind = any(In.PoleGroups == out.group_active', 1);
 out.poles_active = In.PoleArray(out.poles_active_ind)';

@@ -1,4 +1,4 @@
-function [h,p_out,scales, groups, f] = createAtoms(NumSamples,opt)
+function [h,p_out,scales, groups, f, L] = createAtoms(NumSamples,opt)
 %% Create Rational Atoms
 % Impulse response matrix, where each column corresponds to N-length
 % impulse response of:
@@ -44,7 +44,7 @@ FreqSample = opt.FreqSample;
 p = uniform_over_ring_sector(opt.r1,opt.r2,opt.NumAtoms,opt.phi1,opt.phi2,C);
 
 %generate the poles
-[h,p_out, f, scales, groups] = createAtomsDict(p,FreqSample, C, NumSamples);
+[h,p_out, f, scales, groups, L] = createAtomsDict(p,FreqSample, C, NumSamples);
 
 return
 
