@@ -15,9 +15,11 @@ opt.FreqWeight = W;
 %opt.FreqWeight = ones(Ns, ny);
 %opt.Compare = 1;
 opt.Compare = 0;
-opt.tau =  300;
-opt.RandomRounds = 0;
-opt.ReweightRounds = 5;
+opt.tau =200;
+opt.RandomRounds = 10;
+opt.ReweightRounds = 10;
+opt.NumAtoms = 1e3;
+opt.NormType = Inf;
 out = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
 
 figure(2)

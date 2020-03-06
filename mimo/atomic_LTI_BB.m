@@ -166,12 +166,15 @@ b = [b_time; b_freq];
 BB_opt.num_var = nu*ny*np;
 BB_opt.tau = tau;
 BB_opt.w = w;
-BB_opt.delta = 0;
+%BB_opt.delta = 0;
+BB_opt.delta = 1e-4;
 %BB_opt.norm_type = 2;
-BB_opt.norm_type = Inf;
+%BB_opt.norm_type = Inf;
+BB_opt.norm_type = In.NormType;
 BB_opt.is_complex = 0;
 BB_opt.visualize = 0;
-BB_opt.DG_tol = 3e-3;
+%BB_opt.DG_tol = 3e-3;
+BB_opt.DG_tol = 1e-2;
 
 if isfield(In, 'warm_start')
      if isstruct(In.warm_start)
@@ -245,6 +248,7 @@ out.PoleGroupWeights_old = gw;
 %out.PoleGroupWeights_new= [];
 weights_old = [];
 weights_new = [];
+weights_new_all = [];
 x_max = [];
 residues = [];
 
@@ -254,13 +258,13 @@ z = tf('z', 1);
 for gi = 1:Ngroups
     g_curr = w.groups{gi};    
     x_curr = x_final(g_curr);       
-    x_max_curr = norm(x_curr, 'inf');
-        
+    x_max_curr = norm(x_curr, 'inf');        
+    
     if x_max_curr
         x_max(end+1) = x_max_curr;
         weights_old(end+1) = gw(gi);
         if SAME_WEIGHT
-            weights_new(end+1) = w.order(gi)/(delta +  x_max_curr);
+            weights_new(end+1) = 1/(delta +  x_max_curr);
         else
             if gi == 1 && p(1) == 1
                 weights_new(end+1) = In.ConstWeight/(delta +  x_max_curr);
@@ -301,6 +305,8 @@ for gi = 1:Ngroups
     end            
 end
 
+
+
 out.system_order = sum(w.order(out.group_active));
 
 %weights_new  = weights_new * opt.tau/length(weights_new);
@@ -308,6 +314,11 @@ out.system_order = sum(w.order(out.group_active));
 weights_new_norm = weights_new * opt.tau/ (weights_new*x_max');
 out.PoleGroupWeights_new = weights_new_norm;
 weight_compare = [weights_old; weights_new_norm]*x_max';
+
+weights_new_all = ones(1, Ngroups)/delta;
+weights_new_all(out.group_active) = weights_new_norm;
+out.PoleGroupWeights_new_all = weights_new_all;
+
 %normalize new set of weights (?)
 %not sure if this is correct normalization
 %out.PoleGroupWeights_new = out.PoleGroupWeights_new*...

@@ -66,7 +66,8 @@ W = opt.FreqWeight;
 
 In = struct('ym',yn,'u',u,'Ts',1,'ImpRespArray',ha,'PoleArray',p,...
    'PoleGroups', groups, 'FreqRespArray', f, 'FreqWeight', W, ...
-'TargetCost',TargetCost,'pH',{pH}, 'warm_start', 1, 'ConstWeight', L);
+'TargetCost',TargetCost,'pH',{pH}, 'warm_start', 1, 'ConstWeight', L,...
+'NormType', opt.NormType);
 
 In.ImpRespArray = ha;
 In.FreqRespArray = f;
@@ -142,32 +143,34 @@ for i = 1:(opt.RandomRounds)
 end
 
 In = rmfield(In, 'warm_start');
-
+cost_old = out.cost;
 fprintf('Starting Reweighting\n')
 out.cost_list_random = cost_list_random;
 %Sparsify the resultant poles through reweighted heuristic
 for i = 1:(opt.ReweightRounds)   
-    cost_old = out.cost;
-    active_ind = out.poles_active_ind;    
-    ha_curr =  In.ImpRespArray(:, active_ind);
-    f_curr  =  In.FreqRespArray(:, active_ind); 
-
-    In.ImpRespArray = ha_curr;
-    In.FreqRespArray = f_curr;
+%     cost_old = out.cost;
+%     active_ind = out.poles_active_ind;    
+%     ha_curr =  In.ImpRespArray(:, active_ind);
+%     f_curr  =  In.FreqRespArray(:, active_ind); 
+% 
+%     In.ImpRespArray = ha_curr;
+%     In.FreqRespArray = f_curr;
+%     
+%     In.h0 = out.h;
+%     In.PoleGroupWeights = out.PoleGroupWeights_new;
+%     In.PoleGroups = out.PoleGroups_new;
+%     In.PoleArray = out.poles_active;
+%     
+    In.PoleGroupWeights = out.PoleGroupWeights_new_all;
     
-    In.h0 = out.h;
-    In.PoleGroupWeights = out.PoleGroupWeights_new;
-    In.PoleGroups = out.PoleGroups_new;
-    In.PoleArray = out.poles_active;
     
     if (i == opt.ReweightRounds)
         opt.FormSystem = 1;
     end
-    
-    
-    
+            
     out = atomic_LTI_BB(In,opt); 
     fprintf('Cost: %0.3e \t (dCost = %0.3e)  Time: %0.4f \n', out.cost, out.cost - cost_old, out.time) 
+    cost_old = out.cost;
 end
 
 

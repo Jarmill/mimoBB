@@ -7,7 +7,7 @@ classdef sisoAtomOptions <handle
       
       % randomize atomic set over iterations
       Randomize(1,1)logical = false;
-      eedBasis(1,1)logical = false;
+      SeedBasis(1,1)logical = false;
       
       AwayStepOnN
       % nature of atoms
@@ -47,6 +47,8 @@ classdef sisoAtomOptions <handle
       MaxOvershoot param.Continuous % Bound on maximum overshoot
       Bandwidth param.Continuous % Bound on bandwidth
      
+      %group norm used in atomic penalty
+      NormType(1,1)double{mustBePositive} = Inf;
       
       %Frequency domain parameters
       FreqWeight= [];     % Weights for frequency domain fitting
