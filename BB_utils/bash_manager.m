@@ -1277,7 +1277,10 @@ classdef bash_manager
                             else
                                 %stable-suboptimal face
                                 %return to interior (full set of dimensions)
-                                y =  [y; 1-sum(y)];
+                                
+                                %there was a bug here
+                                %anchor is always first
+                                y =  [1-sum(y); y];
                                 obj = obj.ext_to_full();
                             end
                         end

@@ -166,79 +166,60 @@ for i = 1:(opt.ReweightRounds)
         BM = warm_start.bash_manager;
         y = warm_start.y;
         
-        was_boundary = BM.update_ext.exterior;
         if BM.update_ext.exterior
             y = [1-sum(y); y];
             BM = BM.ext_to_full();
         end
         
-        x_prev = BM.get_x(y);
+        
         S_prev = BM.get_S();
         %S_prev = BM
         %find out which atom came from which group
         atom_group_orig = zeros(Ngroups,1);
-        y_sum = zeros(Ngroups, 1);
         for k = 1:Ngroups
             ind_curr = active_group_ind_cell{k};
             S_curr = S_prev(ind_curr, :);
             atom_group_curr = find(any(S_curr, 1));
             atom_group_orig(atom_group_curr) = k;
-            y_sum(k) = sum(y(atom_group_curr));
         end
         
         %now reweight the atoms 
         atom_size_max = BM.atom_size_max;
         
-        W_ratio = out.PoleGroupWeights_old ./ out.PoleGroupWeights_new;
-        W_active  = W_ratio(atom_group_orig)';
+        W_ratio = out.PoleGroupWeights_new ./  out.PoleGroupWeights_old;
+        W_active  = W_ratio(atom_group_orig);
         
+        W_diag = sparse(1:length(W_active), 1:length(W_active), W_active, ...
+            atom_size_max, atom_size_max);
         
-        Natoms = length(y);
-        W_diag = sparse(1:Natoms, 1:Natoms, W_active, Natoms, Natoms);
+        %I think this is correct
+        y_new = y_new ./ W_active;
         
-%         %I think this is correct
-         y_w = y ./ W_active;
-%              
-        %Reweight the atoms
-        S_prev = BM.S(:, 1:Natoms);
-        S_prev_w = S_prev * W_diag;                  
-        %S_new = S_prev_w(active_group_ind, :);               
-        BM.S(:, 1:Natoms) = S_prev_w;
-        BM.S = BM.S(active_group_ind, :);
-       
+        S_prev = BM.S;
+        S_prev_w = S_prev * W_active;
+        S_new = S_prev_w(active_group_ind, :);               
+        BM.S = S_new;
+
         
-        %Reweight the data contributions
-        AS_prev = BM.AS(:, 1:Natoms);
-        AS_prev_w = AS_prev * W_diag;
-        BM.AS(:, 1:Natoms) = AS_prev_w;                
+        AS_prev = BM.AS;
+        AS_prev_w = AS_prev * W_active;
+        AS
         
-        %Reweight the kernel and answer vector
-        K_w = W_diag * BM.K * W_diag;
-        BM.K = K_w;
+        S_new = [S_active];
         
-        rhs_w = W_active .* BM.rhs;
-        BM.rhs = rhs_w;                
-        
-        if was_boundary
-            y_w = y_w(2:end);
+        if abs(sum(y) -1 ) <= 1e-8
+            y = y(1:end-1);
             BM  = BM.full_to_ext();
         end
         
-        x_w = BM.get_x(y_w);
-        grad_w = BM.gradient_full(y_w);
-        e_w = BM.get_error(y_w);
+        %go on a stable-optimal face
+        %this may be redundant
+        [BM, y_new] = BM.bash(y);
         
-        %Move onto a stable-optimal loading on the new skewed ball
-        BM0 = BM;
-        [BM, y_bash] = BM.bash(y_w);
-        
-        x_bash = BM.get_x(y_bash);
-        grad_e = BM.gradient_full(y_bash) ;
-        e_bash = BM.get_error(y_bash);
         %this is replicating the anchor atom        
 
         warm_start.bash_manager = BM;   
-        warm_start.y = y_bash;
+        warm_start.y = y_new;
         In.warm_start = warm_start;
     end
     

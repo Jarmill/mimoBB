@@ -53,7 +53,6 @@ g_rep_0 = permute(repmat(g', [1, nu, ny]), [3,2,1]);
 g_rep = squeeze(reshape(g_rep_0, 1, [], 1));
 g_hot = ind2vec(g); %one-hot encoding of groups
 g_order = sum(g_hot, 2);
-g_rep_hot = ind2vec(g_rep);
 Ngroups = max(g);
 
 %testing purposes only
@@ -88,10 +87,8 @@ w.weights = gw;
 w.order = g_order;
 
 
-for gi = 1:Ngroups
-    i_rep_curr = find(g_rep_hot(gi, :));
-    
-    w.groups{gi} = i_rep_curr;
+for gi = 1:Ngroups    
+    w.groups{gi} = find(g_rep  == gi);
 end
 
 %Formulate the least squares operators and paramters
@@ -244,7 +241,7 @@ out.cost = run_log.error_list(end); %this is cheating, why are the values in dis
 delta = 1e-4;
 %delta = 0;
 out.group_active =  [];
-out.PoleGroupWeights_old = gw;
+out.PoleGroupWeights_old_all = gw;
 %out.PoleGroupWeights_new= [];
 weights_old = [];
 weights_new = [];
@@ -313,6 +310,7 @@ out.system_order = sum(w.order(out.group_active));
 %out.PoleGroupWeights_new = weights_new;
 weights_new_norm = weights_new * opt.tau/ (weights_new*x_max');
 out.PoleGroupWeights_new = weights_new_norm;
+out.PoleGroupWeights_old = weights_old;
 weight_compare = [weights_old; weights_new_norm]*x_max';
 
 weights_new_all = ones(1, Ngroups)/delta;
