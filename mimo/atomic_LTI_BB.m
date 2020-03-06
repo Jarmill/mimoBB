@@ -184,7 +184,8 @@ end
 tic
 %Run the optimization routine
 [x_final, S_final, c_final, run_log] = BB_operator(A, At, b, BB_opt);
-
+%[~, x_norm] = LMO_1d(x_final, opt.NormType, w);
+%fprintf('Gap: %0.3e\n', opt.tau - x_norm)
 out.time = toc;
 
 
@@ -312,6 +313,8 @@ weights_new_norm = weights_new * opt.tau/ (weights_new*x_max');
 out.PoleGroupWeights_new = weights_new_norm;
 out.PoleGroupWeights_old = weights_old;
 weight_compare = [weights_old; weights_new_norm]*x_max';
+
+out.norm_max = x_max;
 
 weights_new_all = ones(1, Ngroups)/delta;
 weights_new_all(out.group_active) = weights_new_norm;

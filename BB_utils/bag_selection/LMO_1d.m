@@ -1,4 +1,4 @@
-function a = LMO_1d(G, norm_type, w)
+function [a, n] = LMO_1d(G, norm_type, w)
 %LMO_1D: Evaluates the linear minimization oracle to find the best atom to
 %add, max <G, a> for a in the set A. Returns a single atom.
 %
@@ -9,6 +9,7 @@ function a = LMO_1d(G, norm_type, w)
 %
 %Output:
 %   a:          Best atom chosen by LMO.
+%   n:          Output norm
 
 %Atoms a and the 'negative gradient' G come from the same Banach space, which means
 %they have equivalent form (for vectors at least)
@@ -28,11 +29,13 @@ if isnumeric(norm_type)
         norm_list = zeros(num_groups, 1);
         
         %poll all groups for their weighted norm
+        n = 0;
         for i = 1:num_groups
             g_curr = w.groups{i};
             w_curr = w.weights(i);
-            
-            norm_list(i) = norm(G(g_curr), norm_type)/w_curr;
+            norm_curr = norm(G(g_curr), norm_type);
+            norm_list(i) = norm_curr/w_curr;
+            n = n + norm_curr*w_curr;
         end
         
         %find the group with the highest weighted norm
@@ -52,6 +55,7 @@ if isnumeric(norm_type)
     else
         %standard regularization
         weighted = ~isequal(w, 1);    
+        n = norm(w.*G, norm_type);
         G = G./w;
         if norm_type == Inf
             %L infinity (corners of ball)                        
@@ -74,6 +78,7 @@ if isnumeric(norm_type)
                 %normalized phase
                 a(i) = G(i)/abs(G(i));
             end
+            
         else
             %Lp norm, 1<p<Inf
             p = norm_type;
@@ -94,6 +99,7 @@ if isnumeric(norm_type)
             den_a = norm(num_a, p); %normalizes the atom to unit L_p norm
 
             a = sg .* num_a / den_a;
+            
         end
 
         %if weighted
@@ -103,16 +109,19 @@ else
     if strcmp(norm_type, 'simp')
         %simplex constraint
         %not centrally symmetric, a gauge
+        n = sum(w.*G);
         G = G./w;
         ip = find(G>0);
         a = sparse(size(G, 1), 1);
         [~, i] = max(G(ip));       
         a(ip(i)) = sign(G(ip(i)));
         a = a ./ w;
+        
     elseif strcmp(norm_type, 'pos')
         %positive orthant intersected with L infinity ball
         %also a gauge, can be described by points of simplex plus a point
         %of all 1's to form the corner
+        n = max(w.*G);
         G = G./w;
         ip = find(G>0);
         a = sparse(size(G, 1), 1);
@@ -132,8 +141,8 @@ else
         %this convolution trick only works on an L2 norm penalty
         z = conv(G.^2, chain, 'valid');
         
-        [v, i] = max(z);
-        v = sqrt(v); %maximal norm (dual norm)
+        [n, i] = max(z);
+        n = sqrt(n); %maximal norm (dual norm)
         
         window = i:(i+w-1);
         a_chain = G(window);
@@ -167,7 +176,7 @@ else
         %Use the linear minimization oracle to decide (subgradient of dual OWL
         %norm)
         LMO_OWL = wr .* G_abs_sum;
-        [~, N_components] = max(LMO_OWL); %how many components to add
+        [n, N_components] = max(LMO_OWL); %how many components to add
         ind_added = i_max(1:N_components); %the indices corresponding to added components
 
 
@@ -212,7 +221,7 @@ else
         %w contains the list of points
         
         LMO_point = G'*w;
-        [~, i_max] = max(LMO_point);
+        [n, i_max] = max(LMO_point);
         a = w(:, i_max);
     end
 

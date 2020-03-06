@@ -1046,7 +1046,7 @@ classdef bash_manager
                 %interior
                 c = y;
             else
-                c = [y; 1-sum(y)];                
+                c = [1-sum(y); y];                
             end
         end
         
@@ -1072,9 +1072,16 @@ classdef bash_manager
             S = obj.S(:, 1:obj.atom_count);
             if obj.update_ext.exterior
                 S = [obj.update_ext.S_anc S];
-            end
-            
-            
+            end                        
+        end
+        
+        function AS = get_AS(obj)
+            %GET_AS returns AS
+            %for reporting purposes, includes the anchor in its proper position.            
+            AS = obj.AS(:, 1:obj.atom_count);
+            if obj.update_ext.exterior
+                AS = [obj.update_ext.AS_anc AS];
+            end                        
         end
         
         function Ax = get_Ax(obj, y)

@@ -162,6 +162,7 @@ for i = 1:(opt.ReweightRounds)
         Ngroups = length(out.group_active);
         active_group_ind_cell = arrayfun(@(i) out.w.groups{i}, out.group_active,   'UniformOutput', false);
         active_group_ind = cat(2, active_group_ind_cell{:});
+
         warm_start = out.run_log.warm_start;
         BM = warm_start.bash_manager;
         y = warm_start.y;
@@ -177,14 +178,15 @@ for i = 1:(opt.ReweightRounds)
         %S_prev = BM
         %find out which atom came from which group
         atom_group_orig = zeros(Ngroups,1);
-        y_sum = zeros(Ngroups, 1);
         for k = 1:Ngroups
             ind_curr = active_group_ind_cell{k};
             S_curr = S_prev(ind_curr, :);
             atom_group_curr = find(any(S_curr, 1));
             atom_group_orig(atom_group_curr) = k;
-            y_sum(k) = sum(y(atom_group_curr));
+            %y_sum(k) = sum(y(atom_group_curr));
         end
+        atom_group_num = accumarray(atom_group_orig, 1);
+        y_sum = accumarray(atom_group_orig, y );
         
         %now reweight the atoms 
         atom_size_max = BM.atom_size_max;
@@ -196,9 +198,9 @@ for i = 1:(opt.ReweightRounds)
         Natoms = length(y);
         W_diag = sparse(1:Natoms, 1:Natoms, W_active, Natoms, Natoms);
         
-%         %I think this is correct
-         y_w = y ./ W_active;
-%              
+        %I think this is correct
+        y_w = y ./ W_active;
+              
         %Reweight the atoms
         S_prev = BM.S(:, 1:Natoms);
         S_prev_w = S_prev * W_diag;                  
@@ -229,16 +231,17 @@ for i = 1:(opt.ReweightRounds)
         e_w = BM.get_error(y_w);
         
         %Move onto a stable-optimal loading on the new skewed ball
-        BM0 = BM;
-        [BM, y_bash] = BM.bash(y_w);
+        %do the bashing inside of optimization
+        %BM0 = BM;
+        %[BM, y_bash] = BM.bash(y_w);
         
-        x_bash = BM.get_x(y_bash);
-        grad_e = BM.gradient_full(y_bash) ;
-        e_bash = BM.get_error(y_bash);
-        %this is replicating the anchor atom        
-
+        %x_bash = BM.get_x(y_bash);
+        %grad_e = BM.gradient_full(y_bash) ;
+        %e_bash = BM.get_error(y_bash);
+        %this is replicating the anchor atom               
+        
         warm_start.bash_manager = BM;   
-        warm_start.y = y_bash;
+        warm_start.y = y_w;
         In.warm_start = warm_start;
     end
     

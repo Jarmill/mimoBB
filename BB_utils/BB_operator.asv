@@ -62,9 +62,7 @@ end
 if isfield(opt, 'warm_start')
     BM =  opt.warm_start.bash_manager;
 
-    y_warm  = opt.warm_start.y; 
-    [BM, y] = BM.bash(y_warm);
-    
+    y  = opt.warm_start.y;     
     c  = BM.get_c(y);
     x  = BM.get_x(y);
     Ax = BM.get_Ax(y);
@@ -74,7 +72,7 @@ if isfield(opt, 'warm_start')
     atomic_norm_start = tau*sum(c);
     cardinality_start = length(c);
     
-
+    [BM, y_new] = BM.bash(y, S_bag, AS_bag);
 else
     y = [];
     c = [];
@@ -139,13 +137,12 @@ first_boundary = 0;
 
     run_log.error_list  = [];
     run_log.atomic_norm = [];
-    run_log.atomic_norm_true = [];
     run_log.cardinality = [];
     run_log.num_attempted = [];
     run_log.num_survived = [];
     run_log.duality_gap = [];
     run_log.time = [];
-if  will_visualize
+if will_visualize
     figure(5);
     clf
     color_list = get(gca,'ColorOrder');    
@@ -241,7 +238,6 @@ while ~terminate
     run_log.num_survived(k) = N_survived;
     run_log.duality_gap(k) = DG;   
     run_log.time(k) = toc;
-    run_log.atomic_norm_true(k) = n_new;
     
     %% visualizations go here
     
@@ -371,7 +367,6 @@ while ~terminate
         subplot(4, 2, 4)
         hold on
         plot(0:length(run_log.atomic_norm), [atomic_norm_start run_log.atomic_norm])
-        plot(0:length(run_log.atomic_norm_true), [atomic_norm_start run_log.atomic_norm_true])
         %stem(x_new, '.')
         if first_boundary
                 plot([first_boundary, first_boundary], ylim, ':b')
