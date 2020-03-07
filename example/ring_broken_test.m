@@ -22,6 +22,7 @@ x_bash = BM.get_x(y_bash);
 [~, x_norm_bash] = LMO_1d(x_bash, opt.norm_type, opt.w);
 
 opt.visualize_end = 1;
+opt.visualize = 0;
 
 %start from the previous point?
 WARM_START = 1;
@@ -29,20 +30,18 @@ WARM_START = 1;
 SAME_WEIGHTS = 0;
 
 %% Run BB algorithm
-if WARM_START
+if ~WARM_START
     opt = rmfield(opt,'warm_start');
+    
+    if SAME_WEIGHTS && ~WARM_START
+        opt.w.weights = ones(size(opt.w.weights));
+    end
 end
 
-if SAME_WEIGHTS
-    opt.w.weights = ones(size(opt.w.weights));
-end
+
 
 [x_final, S_final, c_final, run_log] = BB_operator(A, At, b, opt);
 e_final = 0.5*norm(A(x_final)-b,2)^2 + 0.5*opt.delta*norm(x_final,2)^2;
  
 %Notice the discrepency in norm, it does not equal 200
 [~, x_norm_final] = LMO_1d(x_final, opt.norm_type,  opt.w);
-
-figure(3)
-plot(run_log.atomic_norm- run_log.atomic_norm_true)
-title('Gap in Atomic Norm (should be 0)   ')

@@ -25,6 +25,7 @@ ze = zn(1:Ns);
 yn = ze.y;
 u = ze.u;
 y =  z(1:Ns).y;
+tau0 = opt.tau;
 
 G = etfe(iddata(y,u));
 opt.FreqSample = G.Frequency;
@@ -153,7 +154,8 @@ cost_list_reweight = [];
 for i = 1:(opt.ReweightRounds)   
 
     cost_old = out.cost;
-    active_ind = out.poles_active_ind;    
+    active_ind = out.poles_active_ind;   
+    opt.tau = out.tau;
     
     
     if TRUE_WARM_START

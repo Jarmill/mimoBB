@@ -309,11 +309,10 @@ out.system_order = sum(w.order(out.group_active));
 %out.PoleGroupWeights_new = weights_new;
 
 %Do I want to deal with reloading atoms?
-%Allow for slippage (sloppiness?)
-%out.tau = opt.tau;
-out.tau = weights_old*x_max';
+%tau_used = opt.tau;
+o= weights_old*x_max';
 
-weights_new_norm = weights_new * out.tau/ (weights_new*x_max');
+weights_new_norm = weights_new * tau_used/ (weights_new*x_max');
 out.PoleGroupWeights_new = weights_new_norm;
 out.PoleGroupWeights_old = weights_old;
 weight_compare = [weights_old; weights_new_norm]*x_max';

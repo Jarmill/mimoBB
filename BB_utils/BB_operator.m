@@ -73,6 +73,7 @@ if isfield(opt, 'warm_start')
     
     atomic_norm_start = tau*sum(c);
     cardinality_start = length(c);
+    [~, n_new] = LMO_1d(x,  opt.norm_type, opt.w);
     
 
 else
