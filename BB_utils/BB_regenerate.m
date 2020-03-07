@@ -9,9 +9,11 @@ Id = @(xi) xi;
 w = opt.w;
 opt_rec = opt;
 opt_rec.delta = 0;
+opt_rec.DG_tol = 1e-4;
 if isfield(opt_rec, 'warm_start')
     opt_rec = rmfield(opt_rec, 'warm_start');
 end
+%opt_rec.visualize = 1;
 [x_rec, S_rec, c_rec ,run_log_rec] = BB_operator(Id, Id, x, opt_rec);
 end
 
