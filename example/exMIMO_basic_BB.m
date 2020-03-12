@@ -41,26 +41,42 @@ sys = utGenExampleSystem(rho,ny,nu,nx);
 
 %opt.tau = 62;
 %opt.tau = 400;
-opt.tau = 350;
+%opt.tau = 350; %this is a stress test
 %opt.tau = 200;
-%opt.tau = 100;
+
+opt.tau = 100;
 
 
 opt.NumAtoms = 800;
 opt.MaxIterTrace = 800;
 opt.ShowProgressPlot = false;
-opt.SearchMethod = "grad";
-opt.Randomize = true;
-opt.AwayStepOnNeedBasis = true;
+%opt.SearchMethod = "grad";
+%opt.Randomize = true;
 
 
 %W = ones(Ns, nu, ny);
 opt.FreqWeight = [];
+opt.RandomRounds = 10;
 opt.ReweightRounds = 10;
 
 opt.Compare = 0;
 out = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
 %utGenAnalysisPlots(out,sys) % quality analysis
+
+figure(2)
+clf
+%iopzmap(out.sys_out)
+hold on
+th = linspace(0, 2*pi,  201);
+scatter(real(out.poles_active), imag(out.poles_active), 200, 'x')
+plot(cos(th), sin(th), 'k') 
+hold off
+axis square
+title('Poles of Identified System') 
+xlabel('Re(z)')
+ylabel('Im(z)')
+
+
 % 
 % 
 % %% Example 2: repeated real pole (hard to get good results)

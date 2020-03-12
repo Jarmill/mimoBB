@@ -35,7 +35,7 @@ N = opt.num_var;
 norm_type = opt.norm_type;
 
 
-if ismatrix(A)
+if isnumeric(A)
     %can probably do this more elegantly
     A0 = A;
     At = @(r) A0'*r;
@@ -83,9 +83,7 @@ if isfield(opt, 'warm_start')
     on_boundary = BM.update_ext.exterior;
     
     atomic_norm_start = tau*sum(c);
-    cardinality_start = length(c);
-    [n, nlist] = anorm_1d(x,  opt.norm_type, opt.w);
-    
+    cardinality_start = length(c);    
 else
     y = [];
     c = [];
@@ -97,13 +95,12 @@ else
     on_boundary = 0;   
     
     atomic_norm_start = 0;
-    cardinality_start = 0;
-    n = 0;
-    nlist = 0;
+    cardinality_start = 0;   
 end
 
 res = Ax - b;
 grad = At(res) + delta*x;
+[n, nlist] = anorm_1d(x,  opt.norm_type, opt.w);
 
 error_orig = 0.5*norm(Ax-b)^2 + 0.5*delta*norm(x)^2;
 error_old = error_orig;
@@ -126,6 +123,14 @@ end
 
 N_bag = bag_int_increase;
 
+%atom regeneration
+if ~isfield(opt, 'regenerate') 
+    opt.regenerate = 1;
+end
+
+if ~isfield(opt, 'regen_depth') 
+    opt.regen_depth = 0;
+end
 
 %visualization
 if ~isfield(opt, 'visualize') 
@@ -192,12 +197,13 @@ while ~terminate
         c = BM.get_c(y);
         anorm_viol = abs(opt.tau*sum(c) - n)>=1e-8;
         
-        if anorm_viol && BM.update_ext.exterior
+        if opt.regenerate && anorm_viol && BM.update_ext.exterior && opt.regen_de
             %regenerate a new set of atoms matching the current point
             %use a basis pursuit algorithm            
             if isstruct(opt.w)
                 
-                [BM, y] = BM.ext_to_full(y);
+                [BM] = BM.ext_to_full(y);
+                y = [1-sum(y); y];
                 
                 %identify which atoms came from which groups
                 %
@@ -211,69 +217,107 @@ while ~terminate
                 group_viol.S_rec = {};
                 group_viol.c_rec = {};
                 group_viol.S_rec_embed = [];
-                for k = 1:Ngroups
-                    ind_curr = opt.w.groups{k};
+                for g = 1:Ngroups
+                    ind_curr = opt.w.groups{g};
                     S_curr = S_new(ind_curr, :);
                     atom_group_curr = find(any(S_curr, 1));
-                    atom_group_orig(atom_group_curr) = k;
+                    atom_group_orig(atom_group_curr) = g;
                     
                     c_curr = c(atom_group_curr);
-                    
-                    n_ref = obj.tau  * norm(c_curr, 1);                                        
+
+                    n_ref = opt.tau  * norm(c_curr, 1);                                        
                                         
-                    if abs(n_ref - nlist(k)) >= 1e-8
+                    if abs(n_ref - nlist(g)) >= 1e-8
                         %Does this group have an inefficient
                         %representation?
+                        weight_curr = opt.w.weights(g);
+                        
                         group_viol.group{end+1} = ind_curr;
-                        group_viol.group_ind(end+1) =  k;
-                        group_viol.atom_ind(end+1) =  atom_group_curr;
+                        group_viol.group_ind(end+1) =  g;
+                        group_viol.atom_ind{end+1} =  atom_group_curr;
                         
                         S_active = S_curr(:, atom_group_curr);
                         x_active = S_active * c_curr;
                         opt_rec = opt;
-                        opt_rec.w = opt.w.weights(k);      
+                        %opt_rec.w = opt.w.weights(g);      
+                        opt_rec.w = 1;      
+                        opt_rec.num_var = length(x_active);
+                        opt_rec.tau = anorm_1d(x_active,  opt_rec.norm_type, opt_rec.w);
+                        opt_rec.visualize = 0;
+                        opt_rec.visualize_end=0;
+
                         
-                        [x_rec, S_rec, c_rec] = BB_regenerate(x_active, opt_rec);
+                        DG_tol = 1e-8;
+                        x_rec = [];
+                        
+                        while isempty(x_rec) || norm(x_rec - x_active) > 1e-6
+                            [x_rec, S_rec, c_rec] = BB_regenerate(x_active, opt_rec, DG_tol);
+                            DG_tol = DG_tol * 1e-2;
+                        end
+                            
+                        
+                        c_rec = c_rec*weight_curr*opt_rec.tau;
+                        S_rec = S_rec/weight_curr;                        
+                        
+                        S_rec(:, abs(c_rec)<=1e-8) = [];
+                        c_rec(abs(c_rec)<=1e-8) = [];
+                        
                         S_rec_embed = sparse(opt.num_var, size(S_rec, 2));
+                        
+                        %embed in larger matrix
                         S_rec_embed(ind_curr, :) = S_rec;
                         group_viol.S_rec{end+1} =  S_rec;
-                        group_viol.c_rec{end+1} =  c_rec/nlist(k);
+                        group_viol.c_rec{end+1} =  c_rec;
                         group_viol.S_rec_embed = [group_viol.S_rec_embed  S_rec_embed];
                     end
                     
                 end
                 
-                %Now add the regenerated atoms back to the system
+                %Now delete the old atoms and add the new atoms back into
+                %the system.
                 ind_delete = group_viol.atom_ind{:};
                 c_add = group_viol.c_rec{:};
-                for k = 1:length(group_viol.c_rec)
-                    
-                end
                 
-        end
+                S_rec = group_viol.S_rec_embed;
+                BM = BM.delete_indices(ind_delete);
+                c_rem = c;
+                c_rem(ind_delete) = [];
+                y = [c_rem; c_add];
+                N_add = length(c_add);
+            
             else
-                [x_rec, S_rec, c_rec] = BB_regenerate(x, opt);
+                [x_rec, S_rec, c_rec] = BB_regenerate(x, opt);                                                       
+
+                S_rec(:, abs(c_rec)<=1e-8) = [];
+                c_rec(abs(c_rec)<=1e-8) = [];
+                
+                y = c_rec;
+                N_add = length(y);
+                
                 
                 %now flush the bash manager
                 BM = bash_manager(b_bash, tau, delta, norm_type, w, FCFW);
-                
+            end
+                                
+        
+            
                 if A_matrix
                     AS_rec = A(S_rec);
                 else
-                    AS_rec = zeros(length(Ax), length(c));
-                    for i = 1:length(c)
+                    AS_rec = zeros(length(Ax), N_add);
+                    for i = 1:N_add
+                        AS_rec(:, i) = A(S_rec(:, i));
+                    end
                 end
                 
                 BM = BM.add_atoms(S_rec, AS_rec);
                 
-                if abs(sum(c_rec)-1) <=  1e-12
-                    [BM, y] = BM.full_to_ext(c_rec);
-                else
-                    y = c_rec;
+                if abs(sum(y)-1) <=  1e-12
+                    BM = BM.full_to_ext(c_rec);
+                    y = y(2:end);
                 end                
-            end
             
-            [BM, y_new] = BM.bash(y, S_bag, AS_bag);
+            [BM, y_new] = BM.bash(y);
             c_new = BM.get_c(y_new);
             
             x_new = BM.get_x(y_new);
@@ -286,15 +330,15 @@ while ~terminate
         
             %grad_new = BM.grad(A, y_new);
         
-            grad_new = At(Ax_new-b) + delta*x_new;
-            
-            %identify problematic atoms
+            grad_new = At(Ax_new-b) + delta*x_new;                    
             
         else
             terminate = 1;
             y_new = y;
             error_new = error_old;
             N_survived = 0;
+            n_new = n;
+            nlist_new = nlist;
         end
         %DG = 0;        
         
@@ -364,7 +408,7 @@ while ~terminate
     run_log.num_survived(k) = N_survived;
     run_log.duality_gap(k) = DG;   
     run_log.time(k) = toc;
-    run_log.atomic_norm_true(k) = n;
+    run_log.atomic_norm_true(k) = n_new;
     
     %% visualizations go here
     
@@ -613,7 +657,7 @@ while ~terminate
         grad = grad_new;
         
         n = n_new;
-        nlist = nlist_new
+        nlist = nlist_new;
         
         c = c_new;
         y = y_new;

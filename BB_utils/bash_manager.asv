@@ -123,7 +123,8 @@ classdef bash_manager
             
             %find the addition to the kernel  
             
-
+            if obj.atom_count + N_bag >= obj.atom_size_max
+                obj.atom_size_max = 
             
             %bag term
             %find the number of new atoms and the indices in which they
@@ -131,18 +132,7 @@ classdef bash_manager
             N_bag = size(S_bag, 2); %number of new atoms
             %bag_ind = obj.stack(1:N_bag);
             bag_ind = obj.atom_count + (1:N_bag)';
-            %obj.stack = obj.stack((N_bag+1):end);       
-            
-            
-            if obj.atom_count + N_bag >= obj.atom_size_max
-                S_pad = sparse(size(obj.S, 1), 200);
-                AS_pad = sparse(size(obj.AS, 1), 200);
-                
-                obj.S = [obj.S S_pad];
-                obj.AS = [obj.AS AS_pad];
-                obj.atom_size_max = obj.atom_size_max + 200;
-                
-            end
+            %obj.stack = obj.stack((N_bag+1):end);                        
             
             %activate these indices on the mask
             %old_ind = find(obj.mask); %indices where there are currently active atoms

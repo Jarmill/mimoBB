@@ -128,6 +128,10 @@ if ~isfield(opt, 'regenerate')
     opt.regenerate = 1;
 end
 
+if ~isfield(opt, 'regen_depth') 
+    opt.regen_depth = 0;
+end
+
 %visualization
 if ~isfield(opt, 'visualize') 
     opt.visualize = 0;
@@ -193,7 +197,7 @@ while ~terminate
         c = BM.get_c(y);
         anorm_viol = abs(opt.tau*sum(c) - n)>=1e-8;
         
-        if opt.regenerate && anorm_viol && BM.update_ext.exterior 
+        if opt.regenerate && anorm_viol && BM.update_ext.exterior && ~opt.regen_depth
             %regenerate a new set of atoms matching the current point
             %use a basis pursuit algorithm            
             if isstruct(opt.w)
@@ -213,36 +217,44 @@ while ~terminate
                 group_viol.S_rec = {};
                 group_viol.c_rec = {};
                 group_viol.S_rec_embed = [];
-                for k = 1:Ngroups
-                    ind_curr = opt.w.groups{k};
+                for g = 1:Ngroups
+                    ind_curr = opt.w.groups{g};
                     S_curr = S_new(ind_curr, :);
                     atom_group_curr = find(any(S_curr, 1));
-                    atom_group_orig(atom_group_curr) = k;
+                    atom_group_orig(atom_group_curr) = g;
                     
                     c_curr = c(atom_group_curr);
 
                     n_ref = opt.tau  * norm(c_curr, 1);                                        
                                         
-                    if abs(n_ref - nlist(k)) >= 1e-8
+                    if abs(n_ref - nlist(g)) >= 1e-8
                         %Does this group have an inefficient
                         %representation?
-                        weight_curr = opt.w.weights(k);
+                        weight_curr = opt.w.weights(g);
                         
                         group_viol.group{end+1} = ind_curr;
-                        group_viol.group_ind(end+1) =  k;
+                        group_viol.group_ind(end+1) =  g;
                         group_viol.atom_ind{end+1} =  atom_group_curr;
                         
                         S_active = S_curr(:, atom_group_curr);
                         x_active = S_active * c_curr;
                         opt_rec = opt;
-                        %opt_rec.w = opt.w.weights(k);      
+                        %opt_rec.w = opt.w.weights(g);      
                         opt_rec.w = 1;      
                         opt_rec.num_var = length(x_active);
                         opt_rec.tau = anorm_1d(x_active,  opt_rec.norm_type, opt_rec.w);
                         opt_rec.visualize = 0;
                         opt_rec.visualize_end=0;
+
                         
-                        [x_rec, S_rec, c_rec] = BB_regenerate(x_active, opt_rec);
+                        DG_tol = 1e-8;
+                        x_rec = [];
+                        
+                        while isempty(x_rec) || norm(x_rec - x_active) > 1e-6
+                            [x_rec, S_rec, c_rec] = BB_regenerate(x_active, opt_rec, DG_tol);
+                            DG_tol = DG_tol * 1e-2;
+                        end
+                            
                         
                         c_rec = c_rec*weight_curr*opt_rec.tau;
                         S_rec = S_rec/weight_curr;                        
@@ -263,8 +275,8 @@ while ~terminate
                 
                 %Now delete the old atoms and add the new atoms back into
                 %the system.
-                ind_delete = group_viol.atom_ind{:};
-                c_add = group_viol.c_rec{:};
+                ind_delete = cat(2, group_viol.atom_ind{:});
+                c_add = cat(1, group_viol.c_rec{:});
                 
                 S_rec = group_viol.S_rec_embed;
                 BM = BM.delete_indices(ind_delete);
