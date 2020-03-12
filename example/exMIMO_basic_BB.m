@@ -42,9 +42,9 @@ sys = utGenExampleSystem(rho,ny,nu,nx);
 %opt.tau = 62;
 %opt.tau = 400;
 %opt.tau = 350; %this is a stress test
-%opt.tau = 200;
+opt.tau = 200;
 
-opt.tau = 100;
+%opt.tau = 100;
 
 
 opt.NumAtoms = 800;

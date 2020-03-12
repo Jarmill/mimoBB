@@ -305,7 +305,7 @@ classdef bash_manager
         %   adding and sign-switching indices
         
         function obj = delete_index(obj, ind)
-            %DELETE_INDEX deletion of a single dimension, indexed by
+            %DELETE_INDEX deletion of dimensions, indexed by
             %homogenous coordinates (y, not involved/anchor)
             
             %delete index from cholesky decomposition
@@ -319,6 +319,7 @@ classdef bash_manager
             %%now kill it from all accessory data
             
             %delete the old index of atom parameters
+            N_drop = length(ind);
             
             S_drop = obj.S(:, ind);
             %drop from the bagger
@@ -335,13 +336,27 @@ classdef bash_manager
             %obj.stack = [ind; obj.stack];
             
             %pulling: move over everything in S and AS
-            obj.S(:, ind:(obj.atom_count-1)) = obj.S(:, (ind+1):obj.atom_count);
-            obj.S(:, obj.atom_count) = 0;
+            %ind_first = ind(1);
+            %ind_replace = ind_first + (1:(N_drop-1));
             
-            obj.AS(:, ind:(obj.atom_count-1)) = obj.AS(:, (ind+1):obj.atom_count);
-            obj.AS(:, obj.atom_count) = 0;                        
+            ind_replace = ind(1):obj.atom_count;
+            ind_replace(ind-ind(1) + 1) = [];
+            ind_all = ind(1) + (1:length(ind_replace)) - 1;
             
-            obj.atom_count = obj.atom_count - 1;            
+            ind_post_drop = obj.atom_count + (0:-1:(-N_drop+1));
+            
+            obj.S(:, ind_all) = obj.S(:, ind_replace);
+            obj.AS(:, ind_all) = obj.AS(:, ind_replace);
+            
+            obj.S(:, ind_post_drop) = 0;
+            obj.AS(:, ind_post_drop) = 0;
+            %obj.S(:, ind:(obj.atom_count-1)) = obj.S(:, (ind+1):obj.atom_count);
+            %obj.S(:, obj.atom_count) = 0;
+            
+            %obj.AS(:, ind:(obj.atom_count-1)) = obj.AS(:, (ind+1):obj.atom_count);
+            %obj.AS(:, obj.atom_count) = 0;                        
+            
+            obj.atom_count = obj.atom_count - N_drop;            
             
             obj.K(ind, :) = [];
             obj.K(:, ind) = []; %inefficient?
@@ -379,18 +394,18 @@ classdef bash_manager
             %DELETE_INDICES when you want to delete multiple dimensions at
             %a time. Passing an index of '0' is dropping the anchor, and
             %this drop occurs last.
-            drop_ind_s = sort(drop_ind, 'descend');
-            
-            
-            for i = 1:length(drop_ind_s)
-                di = drop_ind_s(i);
-                if di == 0
+            if ~isempty(drop_ind)
+                drop_ind_s = sort(drop_ind, 'ascend');
+
+                if drop_ind_s(1) == 0
+                    if length(drop_ind_s) > 1
+                        drop_list = drop_ind_s(2:end);
+                        obj = obj.delete_index(drop_list);
+                    end
                     obj = obj.delete_anchor();
-                else            
-                    %mask_ind_drop = mask_indices(di);
-                    %obj = obj.delete_index(mask_ind_drop);                    
-                    obj = obj.delete_index(di);
-                end                   
+                else
+                    obj = obj.delete_index(drop_ind_s);
+                end
             end
             
         end

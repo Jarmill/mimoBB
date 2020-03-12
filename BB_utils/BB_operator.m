@@ -300,22 +300,23 @@ while ~terminate
             end
                                 
         
-            
-                if A_matrix
-                    AS_rec = A(S_rec);
-                else
-                    AS_rec = zeros(length(Ax), N_add);
-                    for i = 1:N_add
-                        AS_rec(:, i) = A(S_rec(:, i));
-                    end
+            %Now add the regenerated atoms to the bash manager, and get to
+            %a better iterate.
+            if A_matrix
+                AS_rec = A(S_rec);
+            else
+                AS_rec = zeros(length(Ax), N_add);
+                for i = 1:N_add
+                    AS_rec(:, i) = A(S_rec(:, i));
                 end
-                
-                BM = BM.add_atoms(S_rec, AS_rec);
-                
-                if abs(sum(y)-1) <=  1e-12
-                    BM = BM.full_to_ext(c_rec);
-                    y = y(2:end);
-                end                
+            end
+
+            BM = BM.add_atoms(S_rec, AS_rec);
+
+            if abs(sum(y)-1) <=  1e-12
+                BM = BM.full_to_ext(c_rec);
+                y = y(2:end);
+            end                
             
             [BM, y_new] = BM.bash(y);
             c_new = BM.get_c(y_new);
