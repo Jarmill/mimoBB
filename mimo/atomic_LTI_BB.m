@@ -303,7 +303,8 @@ for gi = 1:Ngroups
     end            
 end
 
-out.system_order = sum(w.order(out.group_active));
+out.system_order =full(sum(w.order(out.group_active)));
+
 
 %weights_new  = weights_new * opt.tau/length(weights_new);
 %out.PoleGroupWeights_new = weights_new;

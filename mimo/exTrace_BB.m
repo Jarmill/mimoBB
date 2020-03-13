@@ -4,7 +4,7 @@
 % objective is trace(E*E'*W) where W is a weighting matrix. By default W =
 % eye(ny).
 
-function out = exTrace_BB(sys,Ns,SNR,InputBWFraction,opt)
+function [out, out_random] = exTrace_BB(sys,Ns,SNR,InputBWFraction,opt)
 close all
 [z,zn,noise,ny,nu,nx] = utGenData(sys,SNR,InputBWFraction,2*Ns);
 %{
@@ -31,44 +31,26 @@ G = etfe(iddata(y,u));
 opt.FreqSample = G.Frequency;
 %opt.FreqResponse = permute(G.ResponseData, [3, 2, 1]);
 opt.FreqResponse = G.ResponseData;
-
-TargetCost = norm(yn-y)^2/2;
-fprintf('--------------------------------------------\n')
-fprintf('Actual residue norm: %g\n',TargetCost)
-fprintf('--------------------------------------------\n')
+% 
+% TargetCost = norm(yn-y)^2/2;
+% fprintf('--------------------------------------------\n')
+% fprintf('Actual residue norm: %g\n',TargetCost)
+% fprintf('--------------------------------------------\n')
 
 
 fprintf('Starting Randomization\n')
 pp = pole(sys);
 [ha,p, scales, groups, f, L] = createAtoms(Ns,opt);
-pH = cell(ny,nu);
-if opt.ShowProgressPlot   
-   pos = cell(ny,nu);
-   pos{1,1} = [414,667,377,304];
-   pos{1,2} = [798,666,363,304];
-   pos{1,3} = [1168,666,409,298];
-   pos{2,1} = [410,281,393,295];
-   pos{2,2} = [807,281,360,296];
-   pos{2,3} = [1173,283,406,288];
-   for ky = 1:ny
-      for ku = 1:nu
-         figure('pos',pos{ky,ku},'Name',fprintf('IO(%d,%d)',ky,ku))
-         hh = plot(real(pp),imag(pp),'rx',NaN,NaN,'go');
-         pH{ky,ku} = hh(2);
-         shg
-      end
-   end
-end
 
 
 %Need to cleverly design weighting functions (to do)
 
 W = opt.FreqWeight;
 
-In = struct('ym',yn,'u',u,'Ts',1,'ImpRespArray',ha,'PoleArray',p,...
-   'PoleGroups', groups, 'FreqRespArray', f, 'FreqWeight', W, ...
-'TargetCost',TargetCost,'pH',{pH}, 'warm_start', 1, 'ConstWeight', L,...
-'NormType', opt.NormType);
+In  = struct('ym',yn,'u',u,'Ts',1,'ImpRespArray',ha,'PoleArray',p,...
+     'PoleGroups', groups, 'FreqRespArray', f, 'FreqWeight', W, ...
+     'warm_start', 1, 'ConstWeight', L,...
+     'NormType', opt.NormType);
 
 In.ImpRespArray = ha;
 In.FreqRespArray = f;
@@ -82,7 +64,7 @@ end
 
 out = atomic_LTI_BB(In,opt); 
 cost_list_random = [cost_list; out.cost];
-fprintf('Cost: %0.3e \t Time: %0.4f \n',out.cost, out.time)
+fprintf('Cost: %0.3e \t Order: %i \t Time: %0.4f \n',out.cost, out.system_order, out.time)
 
 %Multiple rounds of randomizing poles
 TRUE_WARM_START = 1;
@@ -139,7 +121,7 @@ for i = 1:(opt.RandomRounds)
 % 
     out = atomic_LTI_BB(In,opt); 
     cost_list_random = [cost_list_random; out.cost];
-    fprintf('Cost: %0.3e \t (dCost = %0.3e)  Time: %0.4f \n', out.cost, out.cost - cost_old, out.time)
+    fprintf('Cost: %0.3e \t (dCost = %0.3e) \t Order: %i \t  Time: %0.4f \n', out.cost, out.cost - cost_old, out.system_order, out.time)
     
 end
 
@@ -147,6 +129,8 @@ end
 cost_old = out.cost;
 fprintf('Starting Reweighting\n')
 out.cost_list_random = cost_list_random;
+
+out_random = out;
 
 cost_list_reweight = [];
 %In.warm_start = 1;
@@ -266,9 +250,15 @@ for i = 1:(opt.ReweightRounds)
     end
             
     out = atomic_LTI_BB(In,opt); 
-    fprintf('Cost: %0.3e \t (dCost = %0.3e)  Time: %0.4f \n', out.cost, out.cost - cost_old, out.time) 
-    cost_old = out.cost;
+    fprintf('Cost: %0.3e \t (dCost = %0.3e) \t Order: %i \t  Time: %0.4f \n', out.cost, out.cost - cost_old, out.system_order, out.time)
+
     cost_list_reweight = [cost_list_reweight; out.cost];
+    
+    if abs(out.cost - cost_old) <= opt.ReweightTol
+        break
+    end
+    
+        cost_old = out.cost;
 end
 
 out.cost_list_reweight = cost_list_reweight;
