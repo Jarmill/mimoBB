@@ -104,11 +104,16 @@ end
 
 
 %check the b_freq calculations
-
-if Wdim == 3
+operator = struct;
+%if Wdim == 3
+if ~isempty(W)
+    if isvector(W)
+        %same frequency weighting on all systems
+        W = repmat(W, [1, np, nu]);
+    end
     %IO (weighting function for each input/output pair)
-    A  = @(x) mimo_io_A(x, np, nu, ny, Ns, F, ha, f, W);
-    At = @(r) mimo_io_At(r,np, nu, ny, Ns, F, ha, f, W);
+    operator.A  = @(x) mimo_io_A(x, np, nu, ny, Ns, F, ha, f, W);
+    operator.At = @(r) mimo_io_At(r,np, nu, ny, Ns, F, ha, f, W);
     %Y_rep = repmat(Y, 1, 1, nu);
     %Y_rep = W.*permute(Y_rep, [1, 3, 2]);
 %     G_ref = zeros(size(W, 1),  nu, ny);
@@ -122,18 +127,18 @@ if Wdim == 3
     %b_freq = complex_unfold(squeeze(reshape(Y_rep, [], 1, 1)));
     
     %b_freq = complex_unfold(kron(reshape(permute(Y, [2,1]), [], 1), ones(nu, 1)), 1);
-elseif Wdim == 2
-    %Output (weighting function for each output)
-    %don't use this
-    A  = @(x) mimo_output_A(x, np, nu, ny, Ns, F, ha, f, U, W);
-    At = @(r) mimo_output_At(r,np, nu, ny, Ns, F, ha, f, U, W);
-    %b_freq = complex_unfold(reshape(permute(Y, [2,1]), [], 1));
-    %b_freq = complex_unfold(reshape(W.*Y, [], 1));
-    b_freq = complex_unfold(reshape(W, [], 1));
+% elseif Wdim == 2
+%     %Output (weighting function for each output)
+%     %don't use this
+%     A  = @(x) mimo_output_A(x, np, nu, ny, Ns, F, ha, f, U, W);
+%     At = @(r) mimo_output_At(r,np, nu, ny, Ns, F, ha, f, U, W);
+%     %b_freq = complex_unfold(reshape(permute(Y, [2,1]), [], 1));
+%     %b_freq = complex_unfold(reshape(W.*Y, [], 1));
+%     b_freq = complex_unfold(reshape(W, [], 1));
 else   
     %Time (no frequency penalization)
-    A  = @(x) mimo_A(x, np, nu, ny, Ns, F, ha);
-    At = @(r) mimo_At(r,np, nu, ny, Ns, F, ha);
+    operator.A  = @(x) mimo_A(x, np, nu, ny, Ns, F, ha);
+    operator.At = @(r) mimo_At(r,np, nu, ny, Ns, F, ha);
     b_freq = [];
 end
 
@@ -183,7 +188,7 @@ end
 
 tic
 %Run the optimization routine
-[x_final, S_final, c_final, run_log] = BB_operator(A, At, b, BB_opt);
+[x_final, S_final, c_final, run_log] = BB_operator(operator, b, BB_opt);
 %[~, x_norm] = LMO_1d(x_final, opt.NormType, w);
 %fprintf('Gap: %0.3e\n', opt.tau - x_norm)
 out.time = toc;
@@ -196,7 +201,7 @@ out.run_log = run_log;
 
 
 %output from data
-Ax = A(x_final);
+Ax = operator.A(x_final);
 %h_all = A(x_final)
 
 %time
@@ -209,10 +214,11 @@ out.y = reshape(y_time, Ns, ny);
 y_freq_real = Ax(Ns*ny + 1:end);
 y_freq = complex_fold(y_freq_real, 1);
 
-if Wdim == 3
+%if Wdim == 3
+if ~isempty(W)
     out.f = reshape(y_freq, size(f, 1), nu, ny);
-elseif Wdim == 2
-    out.f = reshape(y_freq, Ns, ny);
+% elseif Wdim == 2
+%     out.f = reshape(y_freq, Ns, ny);
 else
     out.f = [];
 end
@@ -303,7 +309,8 @@ for gi = 1:Ngroups
     end            
 end
 
-out.system_order = sum(w.order(out.group_active));
+out.system_order =full(sum(w.order(out.group_active)));
+
 
 %weights_new  = weights_new * opt.tau/length(weights_new);
 %out.PoleGroupWeights_new = weights_new;

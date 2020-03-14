@@ -18,7 +18,9 @@ opts.norm_type = Inf;
 opts.is_complex = 0;
 
 Id = @(x) x;
-[x_f, S_f, c_f] = BB_operator(Id, Id, x_scale, opts);
+operator.A = Id;
+operator.At = Id;
+[x_f, S_f, c_f] = BB_operator(operator, x_scale, opts);
 
 % opts =  sdpsettings('verbose', 0, 'cachesolvers', 1);
 % while norm(res)>1e-8

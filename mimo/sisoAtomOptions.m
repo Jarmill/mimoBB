@@ -3,13 +3,12 @@ classdef sisoAtomOptions <handle
    % identification.
    properties
       tau = 1; % Atomic radius 
-      AdaptiveTau(1,1) logical = false;
       
       % randomize atomic set over iterations
       Randomize(1,1)logical = false;
-      SeedBasis(1,1)logical = false;
-      
+
       AwayStepOnNeedBasis
+
       % nature of atoms
       % rational: rational atomic set (traditional)
       % spline: first order spline atoms parameterized by 0<=alpha<=1
@@ -64,40 +63,14 @@ classdef sisoAtomOptions <handle
       Wt = 1; 
       RandomRounds = 0; %Number of rounds of randomization after the initial pick of poles
       ReweightRounds = 0; %Number of rounds of reweighted heuristic to sparsify the poles
+      ReweightTol = 1e-3; %tolerance to stop reweighting
       FormSystem = 0;     %Form a transfer function of the system
       % Pick whther the poles should be shared among all I/O pairs during
       % estimation iterations ("ss") or can be picked separately for each
       % pair ("tf"). 
       ModelType(1,1)string{mustBeMember(ModelType,["ss","tf"])} = "ss";
-      
-      % FW scheme: 
-      %  F:    Forward-only; one subsystem at a time
-      %  FA:   Forward and Away; one subsystem at a time
-      %  FC:   Fully Corrective; one subsystem at a time
-      %  JD:   Joint Descent; Forward selection only; all subsystems
-      %        together
-      %  JDA:  Joint Descent; Forward and Away steps; all subsystems
-      %        together
-      % none:  Do not use FW.
-      %  
-      FW(1,1) string {mustBeMember(FW,["F","FA","FC","JD","JDA","none"])} = "FA";
-      
-      % Descent direction determination
-      % gn: Gauss-Newton
-      % gna: Adaptive Gauss-Newton
-      % grad: Steepest Descent
-      SearchMethod(1,1)string{mustBeMember(SearchMethod,["gn","grad","gna","lm"])} = "grad";
-      
-      % Show pole-zero map during estimation (slows things down)
-      ShowProgressPlot(1,1)logical = true;
-      
+           
       %compare against benchmarks
       Compare(1,1)logical = true;
-      
-      % lsqlin options
-      LsqlinOpt = optimoptions('lsqlin','Display','none');
-      
-      % Prefilter
-      PF = 1;
    end
 end

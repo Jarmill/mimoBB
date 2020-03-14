@@ -1,4 +1,4 @@
-function [x_final, S_final, c_final, run_log] = BB_operator(A, At, b, opt)
+function [x_final, S_final, c_final, run_log] = BB_operator(data, b, opt)
 %BB_1d Bag and Bash implementation of 1d-penalized regression. All under one
 %roof. Minimizes LSQ + L2 penalty (least squares + l2 penalty).
 %
@@ -35,13 +35,15 @@ N = opt.num_var;
 norm_type = opt.norm_type;
 
 
-if isnumeric(A)
+if isnumeric(data)
     %can probably do this more elegantly
-    A0 = A;
+    A0 = data;
     At = @(r) A0'*r;
     A  = @(x) A0*x;
     A_matrix = 1;
 else
+    At = data.At;
+    A  = data.A;
     A_matrix = 0;
 end
 
