@@ -257,7 +257,7 @@ x_max = [];
 residues = [];
 
 out.sys_out= 0;
-out.sys_modes = {};
+out.sys_modes = {}; %In.sys_modes;
 z = tf('z', 1);
 for gi = 1:Ngroups
     g_curr = w.groups{gi};    
