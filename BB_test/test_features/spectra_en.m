@@ -39,10 +39,7 @@ opt.export_warm_start = 1;
 %[x_p, S_p, c_p] = BB_L_P(NIR, octane, tau_p, delta, p, 1);
 
 %BB_1d
-Af  = @(x) data_A(NIR, x);
-Atf = @(x) data_At(NIR, x);
-
-[x_l1, S_l1, c_l1, run_l1] = BB_operator(Af, Atf, octane, opt);
+[x_l1, S_l1, c_l1, run_l1] = BB_operator(NIR octane, opt);
 %[x_max, S_max, c_max] = BB_1d(NIR, octane, tau_max, delta, Inf);
 %[x_p, S_p, c_p] = BB_1d(NIR, octane, tau_p, delta, p);
 
@@ -56,12 +53,10 @@ w = w0 *  (tau_max/ (w0'*x_active));
 
 NIR_active  = NIR(:, x_ind);
 
-Ar  = @(x) data_A(NIR_active, x);
-Atr = @(x) data_At(NIR_active, x);
 
 opt.w = w;
 opt.num_var = size(NIR_active, 2);
-[x_r, S_r, c_r, run_r] = BB_operator(Ar, Atr, octane, opt);
+[x_r, S_r, c_r, run_r] = BB_operator(NIR_active, octane, opt);
 
 %reweight2
 x_ind1 = find(x_r);
@@ -73,12 +68,9 @@ w1 = w01 *  (tau_max/ (w01'*abs(x_active1)));
 
 NIR_active1  = NIR_active(:, x_ind1);
 
-Ar1  = @(x) data_A(NIR_active1, x);
-Atr1 = @(x) data_At(NIR_active1, x);
-
 opt.w = w1;
 opt.num_var = size(NIR_active1, 2);
-[x_r1, S_r1, c_r1, run_r1] = BB_operator(Ar1, Atr1, octane, opt);
+[x_r1, S_r1, c_r1, run_r1] = BB_operator(NIR_active1, octane, opt);
 
 %x_pw = ANEN_helpers(NIR, octane, tau, delta);
 

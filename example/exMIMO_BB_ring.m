@@ -1,6 +1,6 @@
 load('ring_sys.mat')
 
-SOLVE = 0;
+SOLVE = 1;
 DRAW = 1;
 
 rng(77, 'twister')
@@ -35,8 +35,8 @@ if DRAW
 figure(2)
 FS = 18;
 clf
-cm_viridis=viridis(m);
-colormap(cm_viridis)
+% cm_viridis=viridis(m);
+% colormap(cm_viridis)
 %iopzmap(out.sys_out)
 subplot(1,2,1)
 hold on
