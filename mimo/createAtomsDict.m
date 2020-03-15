@@ -32,7 +32,8 @@ nr0 = sum(Ir); nc0 = numel(p)-nr0;
 %[scales,L] = getScales(p,Ns); % nr+2*nc elements
 %p2 = [p(Ir),-p(Ir),p(~Ir),-p(~Ir)];
 % duplicate scales for negative atoms.
-[scales,L] = getScales(p,Ns); % nr0+2*nc0 elements
+%[scales,L] = getScales(p,Ns); % nr0+2*nc0 elements
+%[scales,L] = getScales2(p,Ns); % nr0+2*nc0 elements
 p_real = [p(Ir),-p(Ir)];
 
 %p_comp_0 = [p(~Ir),-p(~Ir)];
@@ -44,8 +45,8 @@ p2 = [p_real, p_comp_0];
 p = [p_real, p_comp];
 
 % duplicate scales for negative atoms.
-scales = [scales(1:nr0),scales(1:nr0),scales(nr0+1:end),scales(nr0+1:end)];
-
+%scales = [scales(1:nr0),scales(1:nr0),scales(nr0+1:end),scales(nr0+1:end)];
+[scales, L] = getScales2(p, Ns);
 %Time response
 k = numel(p2);
 

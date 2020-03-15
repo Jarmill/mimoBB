@@ -282,21 +282,25 @@ for gi = 1:Ngroups
         if opt.FormSystem
             x_curr_box = reshape(full(x_curr), ny, nu, []);
             poles_curr = In.PoleArray(In.PoleGroups == gi);
-            scales_curr = getScales(poles_curr(1), Ns);
+            %scales_curr = getScales(poles_curr(1), Ns);
+            %use complex scales instead
+            scale_curr = getScales2(poles_curr, Ns);
+            
 
             %should this be * or / ?
 
 
             if w.order(gi) == 1
-                residue_curr = x_curr_box*scales_curr;
+                residue_curr = x_curr_box*scale_curr;
                 sys_curr = residue_curr/(z - poles_curr);
             else
 
-                res_cos =  x_curr_box(:, :, 1)*scales_curr(1);
-                res_sin =  x_curr_box(:, :, 2)*scales_curr(2);
+                res_cos =  x_curr_box(:, :, 1)*scale_curr;
+                res_sin =  x_curr_box(:, :, 2)*scale_curr;
                 num   = res_cos + z*res_sin;
                 denom = (z - poles_curr(1) )*(z-poles_curr(2));
 
+                %sys_curr = (num/2) / denom;
                 sys_curr = (num/2) / denom;
             end
 

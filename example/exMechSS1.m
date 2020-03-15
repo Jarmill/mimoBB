@@ -14,7 +14,8 @@ sys2 = mechss(M,C,K,B,F);
 w = logspace(1,7,10000);
 sigma(sys2,w);
 %}
-clear,close all,clc
+clear,
+%close all,clc
 warning off 'MATLAB:nearlySingularMatrix'
 warning off 'MATLAB:singularMatrix'
 
@@ -52,7 +53,8 @@ DRAW = 1;
 Nf = numel(G.Frequency);
 Ns = size(z,1);
 %W = (ones(ny,nu,Nf)./max(1e-6,sqrt(abs(G.ResponseData))))*Ns/Nf;
-W = 0*ones(ny,nu,Nf)*Ns/Nf;
+%W = 0*ones(ny,nu,Nf)*Ns/Nf;
+W = [];
 
 opt = sisoAtomOptions;
 opt.r1 = 0.9;
@@ -64,8 +66,10 @@ opt.FreqWeight = W;
 %opt.Compare = 1;
 opt.IncludeConstant = false;
 opt.Compare = 0;
-opt.tau = 0.9;
-opt.RandomRounds = 20;
+opt.tau = 0.7;
+%opt.tau = 0.8;
+%opt.tau = 1.5;
+opt.RandomRounds = 10;
 opt.ReweightRounds = 20;
 opt.NumAtoms = 1000;
 opt.NormType = Inf;
@@ -87,7 +91,7 @@ end
 
 
 if DRAW
-   figure(2)
+   figure(1)
    FS = 18;
    clf
    % cm_viridis=viridis(m);
@@ -126,11 +130,19 @@ if DRAW
    xticks([-1,-0.5,0,0.5,1])
    yticks([-1,-0.5,0,0.5,1])
    
-   figure
+   figure(2)
+   clf
    bodemag(G,syse)
    
-   figure
-   compare(z,syse,'init','z')
+   figure(3)
+   clf
+   %compare()
+   %[yp, fit, xi] = compare(z,syse,'init','z')
+   %compare(z,syse,'init','z')
+   hold on
+   plot(y, 'k')
+   plot(out.y, 'r')
+   hold off
 end
 
 %------------------------------------------------------------------------------------
