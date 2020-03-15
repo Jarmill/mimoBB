@@ -15,6 +15,7 @@ theta = theta(randperm(n)); % scramble 0 angle entries
 r = sqrt(rand(1,n))*(rho2-rho1);
 p = (r+rho1).*cos(theta)+1j*(r+rho1).*sin(theta);
 I = abs(angle(p))<=MaxAngle & abs(angle(p))>=MinAngle & abs(p)<=rho2 & abs(p)>=rho1;
+%dd = -cos(angle(log(p))); I = I & dd<0.2;
 p = p(I);
 p = p(1:min(n0,end));
 if Offset

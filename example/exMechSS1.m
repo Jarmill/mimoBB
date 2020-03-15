@@ -14,33 +14,60 @@ sys2 = mechss(M,C,K,B,F);
 w = logspace(1,7,10000);
 sigma(sys2,w);
 %}
-clear,close all
+clear,close all,clc
+warning off 'MATLAB:nearlySingularMatrix'
+warning off 'MATLAB:singularMatrix'
+
+%{
+% enable this when the code is ready
 load ASML1Data
-Factor = 1e3;
+Factor = 1e4;
 y = StepResp.y*Factor;
+G=fselect(G,[1:100:1965,1966:3655]);
 G.ResponseData = Factor*G.ResponseData;
 G.Frequency = G.Frequency/1000;
 z=iddata(y,ones(size(y)),1,'Tstart',0);
-zd=resample(z,1,2);
-zd.Ts = 1;
+zd = z(1:2e4);
+%}
+
+rng(2)
+sys = rss(4);
+%pole(sys)
+Ts = 0.04;
+t = (0:Ts:25)';
+y=step(sys,t);
+z = iddata(y,ones(size(y)),Ts);
+w = logspace(-1,1,50);
+G=idfrd(frd(sys,w));
+G.Frequency = G.Frequency/25;
+z.Ts=1;
+
+%zd=resample(z,1,2);
+%zd.Ts = 1;
 %opt=ssestOptions;opt.WeightingFilter='inv';opt.Enforce=true;
 ny = 1;
 nu = 1;
 SOLVE = 1;
 DRAW = 1;
-Nf = 3655;
-W = ones(ny,nu,Nf)*size(zd,1)/Nf;
+Nf = numel(G.Frequency);
+Ns = size(z,1);
+%W = (ones(ny,nu,Nf)./max(1e-6,sqrt(abs(G.ResponseData))))*Ns/Nf;
+W = ones(ny,nu,Nf)*Ns/Nf;
+
 opt = sisoAtomOptions;
-%opt.r1 = 0.5;
+opt.r1 = 0.7;
+opt.phi2 = 0.5*pi;
+
 
 opt.FreqWeight = W;
 %opt.FreqWeight = ones(Ns, ny);
 %opt.Compare = 1;
+opt.IncludeConstant = false;
 opt.Compare = 0;
-opt.tau = .01;
+opt.tau = .1;
 opt.RandomRounds = 20;
 opt.ReweightRounds = 20;
-opt.NumAtoms = 1e3;
+opt.NumAtoms = 200;
 opt.NormType = Inf;
 opt.FormSystem = true;
 if SOLVE

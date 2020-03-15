@@ -814,7 +814,7 @@ classdef bash_manager
             if obj.atom_count
                 r = obj.system_rhs();
             
-                y_out = obj.K \ r;
+                y_out = obj.K \ r; %idpack.mldividecov(obj.K,r); % obj.K \ r
             else
                 y_out = [];
             end
