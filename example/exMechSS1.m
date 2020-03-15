@@ -52,7 +52,7 @@ DRAW = 1;
 Nf = numel(G.Frequency);
 Ns = size(z,1);
 %W = (ones(ny,nu,Nf)./max(1e-6,sqrt(abs(G.ResponseData))))*Ns/Nf;
-W = ones(ny,nu,Nf)*Ns/Nf;
+W = 0*ones(ny,nu,Nf)*Ns/Nf;
 
 opt = sisoAtomOptions;
 opt.r1 = 0.9;
@@ -64,7 +64,7 @@ opt.FreqWeight = W;
 %opt.Compare = 1;
 opt.IncludeConstant = false;
 opt.Compare = 0;
-opt.tau = 0.75;
+opt.tau = 0.9;
 opt.RandomRounds = 20;
 opt.ReweightRounds = 20;
 opt.NumAtoms = 1000;
@@ -77,6 +77,14 @@ if SOLVE
       utGenAnalysisPlots(out,sys) % quality analysis
    end
 end
+
+s=out.sys_modes;
+s=cellfun(@(x)zpk(x),s,'uni',0);
+syse=s{1};
+for ct = 2:numel(s)
+   syse=syse+s{ct};
+end
+
 
 if DRAW
    figure(2)
@@ -118,6 +126,11 @@ if DRAW
    xticks([-1,-0.5,0,0.5,1])
    yticks([-1,-0.5,0,0.5,1])
    
+   figure
+   bodemag(G,syse)
+   
+   figure
+   compare(z,syse,'init','z')
 end
 
 %------------------------------------------------------------------------------------
