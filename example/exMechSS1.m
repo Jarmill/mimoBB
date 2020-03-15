@@ -69,7 +69,7 @@ opt.Compare = 0;
 opt.tau = 0.7;
 %opt.tau = 0.8;
 %opt.tau = 1.5;
-opt.RandomRounds = 10;
+opt.RandomRounds = 3;
 opt.ReweightRounds = 20;
 opt.NumAtoms = 1000;
 opt.NormType = Inf;
@@ -138,7 +138,7 @@ if DRAW
    clf
    %compare()
    %[yp, fit, xi] = compare(z,syse,'init','z')
-   %compare(z,syse,'init','z')
+   compare(z,syse,'init','z')
    hold on
    plot(y, 'k')
    plot(out.y, 'r')

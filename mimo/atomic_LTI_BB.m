@@ -284,7 +284,7 @@ for gi = 1:Ngroups
             poles_curr = In.PoleArray(In.PoleGroups == gi);
             %scales_curr = getScales(poles_curr(1), Ns);
             %use complex scales instead
-            scale_curr = getScales2(poles_curr, Ns);
+            scale_curr = getScales2(poles_curr(1), Ns);
             
 
             %should this be * or / ?
@@ -303,6 +303,8 @@ for gi = 1:Ngroups
                 %sys_curr = (num/2) / denom;
                 sys_curr = (num/2) / denom;
             end
+            
+            sys_curr = zpk(sys_curr);
 
             %residues = cat(3, residues, x_curr_box/scales_curr);
 
