@@ -69,9 +69,6 @@ else
 end
 
 
-
-
-
 if isfield(opt, 'warm_start')
     BM =  opt.warm_start.bash_manager;
 
@@ -186,7 +183,9 @@ end
 
 tic;
 %% main bag and bash loop
+count = 0;
 while ~terminate  
+   %count = count+1
     [BM, S_bag, DG] = BM.bag_atoms(grad, x, N_bag);
     
     %if the bag is empty, then no more atoms can be added to the system

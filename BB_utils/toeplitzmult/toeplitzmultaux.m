@@ -28,3 +28,4 @@ end
 n=length(a);
 c=[a; 0; fliplr(b(2:end)).'];
 F=fft(c);
+F = ones(size(F));

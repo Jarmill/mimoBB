@@ -1,4 +1,4 @@
-function [Atb] = mimo_io_At(b,np, nu, ny, Ns, F, ha, f, W, Wt)
+function [Atb] = mimo_io_At(b,np, nu, ny, Ns, Tu, ha, fa, W, Wt)
 %adjoint linear operator for response at output of subsystems with respect 
 %to input. Used in b -> A'b in gradient computation
 
@@ -6,9 +6,9 @@ function [Atb] = mimo_io_At(b,np, nu, ny, Ns, F, ha, f, W, Wt)
 %   c:  coefficient vector to be multiplies
 %   [np, nu, ny]:   Number of poles (dict. entries), inputs, and ouputs
 %   Ns:             Number of samples
-%   F:  FFT for Toeplitz of input u
+%   Tu:  Toeplitz of input u
 %   ha: Pole dictionary in time
-%   f:  Pole dictionary in frequency
+%   fa:  Pole dictionary in frequency
 %   W:  Weighting functions for each I/O pair
 %   Wt: weigthing term in determinant minimization
 
@@ -18,20 +18,16 @@ function [Atb] = mimo_io_At(b,np, nu, ny, Ns, F, ha, f, W, Wt)
 b_time = b(1:(Ns*ny));
 
 
-if nargin >= 11
+if nargin >= 10
     b_time = b_time * Wt;
 end
 
-Atb_time = mimo_At(b_time,np, nu, ny, Ns, F, ha);
+Atb_time = mimo_At(b_time, np, nu, ny, Ns, Tu, ha);
 Atb = Atb_time;
-
 
 b_freq_real = b(Ns*ny + 1:end);
 b_freq = complex_fold(b_freq_real, 1);
-
-
-b_freq = reshape(b_freq, ny, nu, size(f, 1));
-
+b_freq = reshape(b_freq, ny, nu, size(fa, 1));
 
 %weighting term
 %f = Tr(E' W E)
@@ -52,7 +48,7 @@ for j = 1:nu
         
         b_curr  = b_freq(i, j, :);
         wb = squeeze(conj(W(i, j, :)).*b_curr);
-        fwb(i, j, :) = f'* wb;
+        fwb(i, j, :) = fa'* wb;
         
         
         %Atb(i, j, :) = Atb(i, j, :) + fwb;

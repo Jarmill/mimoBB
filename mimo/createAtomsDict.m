@@ -34,17 +34,21 @@ nr0 = sum(Ir); nc0 = numel(p)-nr0;
 % duplicate scales for negative atoms.
 [scales,L] = getScales(p,Ns); % nr0+2*nc0 elements
 p_real = [p(Ir),-p(Ir)];
+p_real = p(Ir);
 
 %p_comp_0 = [p(~Ir),-p(~Ir)];
 %p_comp = [p(~Ir),conj(p(~Ir)),-p(~Ir),conj(-p(~Ir))];
 p_comp_0 = [p(~Ir),-p(~Ir)];
+p_comp_0 = p(~Ir);
 p_comp = [ interleave2(p(~Ir),conj(p(~Ir))), interleave2(-p(~Ir),conj(-p(~Ir)))];
+p_comp = interleave2(p(~Ir),conj(p(~Ir)));
 
 p2 = [p_real, p_comp_0];
 p = [p_real, p_comp];
 
 % duplicate scales for negative atoms.
-scales = [scales(1:nr0),scales(1:nr0),scales(nr0+1:end),scales(nr0+1:end)];
+%scales = [scales(1:nr0),scales(1:nr0),scales(nr0+1:end),scales(nr0+1:end)];
+scales = [scales(1:nr0),scales(nr0+1:end)];
 
 %Time response
 k = numel(p2);
@@ -55,6 +59,8 @@ else
     h = [zeros(1,k);ones(1,k);cumprod(p2(ones(1,Ns-2),:))];
 end
 Ic = (2*nr0+1):numel(p2);
+Ic = (nr0+1):numel(p2);
+
 hc1 = 2*real(h(:,Ic));
 hc1p = hc1(:,1:nc0);
 hc1n = hc1(:,nc0+1:end);
@@ -63,7 +69,7 @@ hc2p = hc2(:,1:nc0);
 hc2n = hc2(:,nc0+1:end);
 
 
-h = [h(:,1:2*nr0),interleave2(hc1p,hc2p, 'col'),interleave2(hc1n,hc2n, 'col')];
+h = [h(:,1:nr0),interleave2(hc1p,hc2p, 'col'),interleave2(hc1n,hc2n, 'col')];
 %h = [h(:,1:2*nr0),hc1p,hc2p,hc1n,hc2n];
 h = h.*scales;
 
@@ -79,11 +85,13 @@ h2a = 2*imag(p(~Ir))./Dra;
 h3 = 2*(z-real(p(~Ir)))./Dr;
 h3a = 2*(z+real(p(~Ir)))./Dra;
 %f = [h1,h1a,h3,h2,h3a,h2a];
-f = [h1, h1a, interleave2(h3,h2, 'col'), interleave2(h3a, h2a, 'col')];
+%f = [h1, h1a, interleave2(h3,h2, 'col'), interleave2(h3a, h2a, 'col')];
+f = [h1, interleave2(h3,h2, 'col')];
 f = f.*scales;
 
 %groups = [1:nr0, nr0+(1:nr0), 2*nr0 + kron([1,1], 1:nc0), 2*nr0 + nc0 + kron([1,1], 1:nc0)];
 groups = [1:nr0, nr0+(1:nr0), 2*nr0 + kron(1:nc0, [1,1]), 2*nr0 + nc0 + kron(1:nc0, [1,1])];
+groups = [1:nr0, nr0 + kron(1:nc0, [1,1])];
 
 if C
    %delicate to deal with L

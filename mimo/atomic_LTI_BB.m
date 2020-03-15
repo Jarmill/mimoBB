@@ -31,10 +31,10 @@ t_max = opt.MaxIterTrace;
 nu = size(u,2);
 
 %Toeplitz the input for fast multiplication
-F = cell(1,nu);
+Tu = cell(1,nu);
 for ku = 1:nu    
-   %Tu{ku} = toeplitz(u(:,ku) ,[u(1,ku);zeros(Ns-1,1)]);
-   F{ku}  = toeplitzmultaux(u(:,ku),  [u(1,ku);zeros(Ns-1,1)]);
+   Tu{ku} = toeplitz(u(:,ku) ,[u(1,ku);zeros(Ns-1,1)]);
+   %F{ku}  = toeplitzmultaux(u(:,ku),  [u(1,ku);zeros(Ns-1,1)]);
    %matrix-vector toeplitz multiplication:
    %y2 = toeplitzmult2(F, u);
 end
@@ -44,7 +44,7 @@ end
 %Process the poles into groups for sum-of-norms regularization
 p  = In.PoleArray;
 ha = In.ImpRespArray;
-f  = In.FreqRespArray;
+fa  = In.FreqRespArray;
 W  = In.FreqWeight;
 np = length(p);
 
@@ -112,8 +112,8 @@ if ~isempty(W)
         W = repmat(W, [1, np, nu]);
     end
     %IO (weighting function for each input/output pair)
-    operator.A  = @(x) mimo_io_A(x, np, nu, ny, Ns, F, ha, f, W);
-    operator.At = @(r) mimo_io_At(r,np, nu, ny, Ns, F, ha, f, W);
+    operator.A  = @(x) mimo_io_A(x, np, nu, ny, Ns, Tu, ha, fa, W);
+    operator.At = @(r) mimo_io_At(r,np, nu, ny, Ns, Tu, ha, fa, W);
     %Y_rep = repmat(Y, 1, 1, nu);
     %Y_rep = W.*permute(Y_rep, [1, 3, 2]);
 %     G_ref = zeros(size(W, 1),  nu, ny);
@@ -137,8 +137,8 @@ if ~isempty(W)
 %     b_freq = complex_unfold(reshape(W, [], 1));
 else   
     %Time (no frequency penalization)
-    operator.A  = @(x) mimo_A(x, np, nu, ny, Ns, F, ha);
-    operator.At = @(r) mimo_At(r,np, nu, ny, Ns, F, ha);
+    operator.A  = @(x) mimo_A(x, np, nu, ny, Ns, Tu, ha);
+    operator.At = @(r) mimo_At(r,np, nu, ny, Ns, Tu, ha);
     b_freq = [];
 end
 
@@ -169,7 +169,7 @@ BB_opt.num_var = nu*ny*np;
 BB_opt.tau = tau;
 BB_opt.w = w;
 %BB_opt.delta = 0;
-BB_opt.delta = 1e-4;
+BB_opt.delta = 0; %1e-4;
 %BB_opt.norm_type = 2;
 %BB_opt.norm_type = Inf;
 BB_opt.norm_type = In.NormType;
@@ -216,7 +216,7 @@ y_freq = complex_fold(y_freq_real, 1);
 
 %if Wdim == 3
 if ~isempty(W)
-    out.f = reshape(y_freq, size(f, 1), nu, ny);
+    out.f = reshape(y_freq, size(fa, 1), nu, ny);
 % elseif Wdim == 2
 %     out.f = reshape(y_freq, Ns, ny);
 else
@@ -289,15 +289,21 @@ for gi = 1:Ngroups
 
             if w.order(gi) == 1
                 residue_curr = x_curr_box*scales_curr;
-                sys_curr = residue_curr/(z - poles_curr);
+                %sys_curr = residue_curr/(z - poles_curr);
+                sys_curr = zpk([],poles_curr,residue_curr,1);
             else
 
                 res_cos =  x_curr_box(:, :, 1)*scales_curr(1);
                 res_sin =  x_curr_box(:, :, 2)*scales_curr(2);
-                num   = res_cos + z*res_sin;
-                denom = (z - poles_curr(1) )*(z-poles_curr(2));
-
-                sys_curr = (num/2) / denom;
+                %num   = res_cos + z*res_sin;
+                %denom = (z - poles_curr(1) )*(z-poles_curr(2));
+                
+                %sys_curr = (num/2) / denom;
+                if res_sin==0
+                   sys_curr = zpk([], poles_curr, res_cos,1);
+                else                   
+                   sys_curr = zpk(-res_cos/res_sin, poles_curr, res_sin,1);
+                end
             end
 
             %residues = cat(3, residues, x_curr_box/scales_curr);

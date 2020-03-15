@@ -1,14 +1,14 @@
-function [Ac] = mimo_io_A(c,np, nu, ny, Ns, F, ha, f, W)
+function [Ac] = mimo_io_A(c,np, nu, ny, Ns, Tu, ha, f, W)
 %linear operator for response at output of subsystems with respect to
 %input. Used in c -> Ac in error and gradient computation
 
 %Frequency domain weighting on individual I/O systems
 
 %Input:
-%   c:  coefficient vector to be multiplies
+%   c:  coefficient vector to be multiplied
 %   [np, nu, ny]:   Number of poles (dict. entries), inputs, and ouputs
 %   Ns:             Number of samples
-%   F:  FFT for Toe plitz of input u
+%   F:  FFT for Toeplitz of input u
 %   ha: Pole dictionary in time
 %   f:  Pole dictionary in frequency
 %   W:  Weighting functions for each I/O pair
@@ -25,7 +25,7 @@ function [Ac] = mimo_io_A(c,np, nu, ny, Ns, F, ha, f, W)
 
 %different order of variables, should be more amenable to randomization
 
-Ac_time = mimo_A(c, np, nu, ny, Ns, F, ha);
+Ac_time = mimo_A(c, np, nu, ny, Ns, Tu, ha);
 
 
 Nf = size(W, 3);

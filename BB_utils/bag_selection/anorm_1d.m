@@ -14,7 +14,7 @@ if isstruct(w)
 %         norm_curr = anorm_1d(G(g_curr), norm_type);
 %         norm_list(i) = norm_curr*w_curr;
 %     end
-    norm_list_0 = cellfun(@(wg) anorm_1d(G(wg) ,norm_type), w.groups);
+    norm_list_0 = cellfun(@(wg) full(anorm_1d(G(wg) ,norm_type)), w.groups);
     if size(norm_list_0, 1) ~= size(w.weights, 1)
         norm_list = norm_list_0 .* w.weights';
     else
@@ -22,7 +22,11 @@ if isstruct(w)
     end    
     n = sum(norm_list);
 else
-    if isnumeric(norm_type)
+   if ~any(G)
+      n = 0;
+   elseif isscalar(G)
+      n = abs(G);
+   elseif isnumeric(norm_type)
         n = norm(G.*w, norm_type);
     elseif strcmp(norm_type, 'simp')
         n = sum(G.*w);

@@ -32,11 +32,12 @@ zd = z(1:2e4);
 
 rng(2)
 sys = rss(4);
+
 %pole(sys)
 Ts = 0.04;
 t = (0:Ts:25)';
 y=step(sys,t);
-z = iddata(y,ones(size(y)),Ts);
+z = iddata([zeros(10,1);y],[zeros(10,1);ones(size(y))],Ts);
 w = logspace(-1,1,50);
 G=idfrd(frd(sys,w));
 G.Frequency = G.Frequency/25;
@@ -52,19 +53,18 @@ DRAW = 1;
 Nf = numel(G.Frequency);
 Ns = size(z,1);
 %W = (ones(ny,nu,Nf)./max(1e-6,sqrt(abs(G.ResponseData))))*Ns/Nf;
-W = 0*ones(ny,nu,Nf)*Ns/Nf;
+W = []; %ones(ny,nu,Nf)*Ns/Nf;
 
 opt = sisoAtomOptions;
 opt.r1 = 0.9;
-opt.phi2 = 0.5*pi;
-
+opt.phi2 = 0.25*pi;
 
 opt.FreqWeight = W;
 %opt.FreqWeight = ones(Ns, ny);
 %opt.Compare = 1;
-opt.IncludeConstant = false;
+opt.IncludeConstant = 0;
 opt.Compare = 0;
-opt.tau = 0.9;
+opt.tau = 2;
 opt.RandomRounds = 20;
 opt.ReweightRounds = 20;
 opt.NumAtoms = 1000;
@@ -79,7 +79,7 @@ if SOLVE
 end
 
 s=out.sys_modes;
-s=cellfun(@(x)zpk(x),s,'uni',0);
+s=cellfun(@(x)ss(x),s,'uni',0);
 syse=s{1};
 for ct = 2:numel(s)
    syse=syse+s{ct};
@@ -87,8 +87,8 @@ end
 
 
 if DRAW
-   figure(2)
-   FS = 18;
+   figure
+   FS = 10;
    clf
    % cm_viridis=viridis(m);
    % colormap(cm_viridis)

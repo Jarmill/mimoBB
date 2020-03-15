@@ -1,4 +1,4 @@
-function [Atb] = mimo_At(b,np, nu, ny, Ns, F, ha, Wt)
+function [Atb] = mimo_At(b,np, nu, ny, Ns, Tu, ha, Wt)
 %adjoint linear operator for response at output of subsystems with respect 
 %to input. Used in b -> A'b in gradient computation
 
@@ -16,7 +16,8 @@ end
 for j = 1:nu
     for i = 1:ny
         b_curr  = b(:, i);
-        ub_curr = toeplitzmult2(conj(F{j}), b_curr);
+        %ub_curr = toeplitzmult2(conj(F{j}), b_curr);
+        ub_curr = Tu{j}'*b_curr;
         rub_curr = ha'*ub_curr;
         %Atb(:, j, i) = rub_curr;
         Atb(i, j, :) = rub_curr;
