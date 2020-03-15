@@ -280,7 +280,7 @@ for gi = 1:Ngroups
         
         %Return the resultant system
         if opt.FormSystem
-            x_curr_box = reshape(x_curr, ny, nu, []);
+            x_curr_box = reshape(full(x_curr), ny, nu, []);
             poles_curr = In.PoleArray(In.PoleGroups == gi);
             scales_curr = getScales(poles_curr(1), Ns);
 

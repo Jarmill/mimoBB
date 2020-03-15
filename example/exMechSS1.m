@@ -55,7 +55,7 @@ Ns = size(z,1);
 W = ones(ny,nu,Nf)*Ns/Nf;
 
 opt = sisoAtomOptions;
-opt.r1 = 0.7;
+opt.r1 = 0.9;
 opt.phi2 = 0.5*pi;
 
 
@@ -64,14 +64,14 @@ opt.FreqWeight = W;
 %opt.Compare = 1;
 opt.IncludeConstant = false;
 opt.Compare = 0;
-opt.tau = .1;
+opt.tau = 0.75;
 opt.RandomRounds = 20;
 opt.ReweightRounds = 20;
-opt.NumAtoms = 200;
+opt.NumAtoms = 1000;
 opt.NormType = Inf;
 opt.FormSystem = true;
 if SOLVE
-   [out, out_random] = localSolve(zd,G,opt); % target cost: 83202.8
+   [out, out_random] = localSolve(z,G,opt); % target cost: 83202.8
    
    if opt.Compare
       utGenAnalysisPlots(out,sys) % quality analysis
