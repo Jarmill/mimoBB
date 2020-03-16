@@ -25,7 +25,6 @@ ze = zn(1:Ns);
 yn = ze.y;
 u = ze.u;
 y =  z(1:Ns).y;
-tau0 = opt.tau;
 
 G = etfe(iddata(y,u));
 opt.FreqSample = G.Frequency;
@@ -56,14 +55,16 @@ In.ImpRespArray = ha;
 In.FreqRespArray = f;
 
 
-cost_list = [];
+cost_list  = [];
+card_list  = [];
+order_list = [];
 
 if ~opt.RandomRounds && ~opt.ReweightRounds
     opt.FormSystem = 1;
 end
 
 out = atomic_LTI_BB(In,opt); 
-cost_list_random = [cost_list; out.cost];
+
 fprintf('Cost: %0.3e \t Order: %i \t Time: %0.4f \n',out.cost, out.system_order, out.time)
 
 %Multiple rounds of randomizing poles
@@ -120,15 +121,18 @@ for i = 1:(opt.RandomRounds)
     end
 % 
     out = atomic_LTI_BB(In,opt); 
-    cost_list_random = [cost_list_random; out.cost];
+    cost_list = [cost_list; out.cost];
+    card_list = [card_list; length(out.AtomCoeff)];
+    order_list = [order_list; out.system_order];
     fprintf('Cost: %0.3e \t (dCost = %0.3e) \t Order: %i \t  Time: %0.4f \n', out.cost, out.cost - cost_old, out.system_order, out.time)
     
 end
 
 %In = rmfield(In, 'warm_start');
-cost_old = out.cost;
 fprintf('Starting Reweighting\n')
-out.cost_list_random = cost_list_random;
+out.cost_list = cost_list;
+out.card_list = card_list;
+out.order_list = order_list;
 
 out_random = out;
 
@@ -138,9 +142,7 @@ cost_list_reweight = [];
 for i = 1:(opt.ReweightRounds)   
 
     cost_old = out.cost;
-    active_ind = out.poles_active_ind;   
-    opt.tau = out.tau;
-    
+    active_ind = out.poles_active_ind;      
     
     if TRUE_WARM_START
         %prepare warm start for reweighted heuristic
@@ -241,18 +243,18 @@ for i = 1:(opt.ReweightRounds)
     In.PoleGroupWeights = out.PoleGroupWeights_new;
     In.PoleGroups = out.PoleGroups_new;
     In.PoleArray = out.poles_active;
-    
-    %In.PoleGroupWeights = out.PoleGroupWeights_new_all;
-    
-    
+      
     if (i == opt.ReweightRounds)
         opt.FormSystem = 1;
     end
             
     out = atomic_LTI_BB(In,opt); 
+    cost_list = [cost_list; out.cost];
+    card_list = [card_list; length(out.AtomCoeff)];
+    order_list = [order_list; out.system_order];
+   
     fprintf('Cost: %0.3e \t (dCost = %0.3e) \t Order: %i \t  Time: %0.4f \n', out.cost, out.cost - cost_old, out.system_order, out.time)
 
-    cost_list_reweight = [cost_list_reweight; out.cost];
     
     if abs(out.cost - cost_old) <= opt.ReweightTol
         break
@@ -263,9 +265,10 @@ end
 
 out.cost_list_reweight = cost_list_reweight;
 
-%Extract system
 
-
+out.cost_list = cost_list;
+out.card_list = card_list;
+out.order_list = order_list;
 
 if opt.Compare
 % Num = out.h';

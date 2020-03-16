@@ -10,19 +10,20 @@ nu = size(sys, 2);
 
 Nf =  128;
 %W = 0.1*ones(Nf, nu, ny);
-%W = 0.05*ones(ny, nu, Nf);
+W = 1e-2*ones(ny, nu, Nf);
 %W = 1e-1*ones(ny, nu, Nf);
-W = [];
+%W = [];
 
 opt.FreqWeight = W;
 %opt.FreqWeight = ones(Ns, ny);
 %opt.Compare = 1;
 opt.Compare = 0;
-opt.tau = 300;
+opt.tau = 200;
 opt.RandomRounds = 20;
 opt.ReweightRounds = 20;
 opt.NumAtoms = 1e3;
 opt.NormType = Inf;
+opt.FormSystem = 1;
 if SOLVE
 [out, out_random] = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
 

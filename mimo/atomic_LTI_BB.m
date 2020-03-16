@@ -248,7 +248,7 @@ out.cost = run_log.error_list(end); %this is cheating, why are the values in dis
 delta = 1e-4;
 %delta = 0;
 out.group_active =  [];
-out.PoleGroupWeights_old_all = gw;
+%out.PoleGroupWeights_old_all = gw;
 %out.PoleGroupWeights_new= [];
 weights_old = [];
 weights_new = [];
@@ -332,9 +332,9 @@ out.PoleGroupWeights_old = weights_old;
 
 out.norm_max = x_max;
 
-weights_new_all = ones(1, Ngroups)/delta;
-weights_new_all(out.group_active) = weights_new_norm;
-out.PoleGroupWeights_new_all = weights_new_all;
+% weights_new_all = ones(1, Ngroups)/delta;
+% weights_new_all(out.group_active) = weights_new_norm;
+% out.PoleGroupWeights_new_all = weights_new_all;
 
 %normalize new set of weights (?)
 %not sure if this is correct normalization
@@ -350,7 +350,7 @@ out.w = w;
 [C, ia, ic] = unique(In.PoleGroups(out.poles_active_ind));
 out.PoleGroups_new = ic';
 
-out.residues_active = residues;
+%out.residues_active = residues;
     
 %h_svd = svd(hankel_mo(h(2:min(1000,N),:)'));
 %out.svd = h_svd(1:min(15,length(h_svd)))';
