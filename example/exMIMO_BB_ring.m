@@ -19,11 +19,12 @@ opt.FreqWeight = W;
 %opt.Compare = 1;
 opt.Compare = 0;
 opt.tau = 200;
-opt.RandomRounds = 20;
-opt.ReweightRounds = 20;
+opt.RandomRounds = 10;
+opt.ReweightRounds = 10;
 opt.NumAtoms = 1e3;
 opt.NormType = Inf;
 opt.FormSystem = 1;
+opt.FCFW = 0;
 if SOLVE
 [out, out_random] = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
 

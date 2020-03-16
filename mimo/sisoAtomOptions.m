@@ -6,7 +6,10 @@ classdef sisoAtomOptions <handle
       
       % randomize atomic set over iterations
       Randomize(1,1)logical = false;
-
+      
+      %use Fully Corrective Frank Wolfe (1), or Forward Frank Wolfe (0)
+      FCFW(1,1) logical = true;
+      
       AwayStepOnNeedBasis
 
       % nature of atoms

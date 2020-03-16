@@ -7,7 +7,13 @@ delta = opt.delta;
 w = opt.w;
 N = opt.num_var;
 norm_type = opt.norm_type;
-DG_tol = opt.DG_tol;
+
+
+if isfield(opt, 'DG_tol') 
+    DG_tol = opt.DG_tol;
+else
+    DG_tol = 1e-4;
+end
 
 if isnumeric(data)
     %can probably do this more elegantly
@@ -24,6 +30,9 @@ end
 
 terminate = 0;
 k = 1;
+
+x = sparse(N, 1);
+Ax = A(x); 
 
 res = Ax - b;
 grad = At(res) + delta*x;
@@ -42,7 +51,9 @@ run_log.atomic_norm = [];
 %run_log.num_survived = [];
 run_log.duality_gap = [];
 run_log.time = [];
-end
+%err = @(x) norm(A(x)-b,2)^2 + delta*norm(x,2)^2;
+
+err = @(x) 0.5*sum((A(x)-b).^2, 1) + 0.5*delta * sum(x.^2, 1);
 
 tic
 while ~terminate  
@@ -57,23 +68,25 @@ while ~terminate
     if DG > DG_tol
         Awdir = A(wdir);
         
-        alpha_top = -DG;
+        alpha_top = DG;
         alpha_bottom = norm(Awdir,2)^2 + delta*norm(wdir,2)^2;
-        alpha = max(0, min(alpha_max, alpha));        
+        alpha = alpha_top/alpha_bottom;
+        %alpha = max(0, min(1, alpha));        
         
         x_new = x + alpha * wdir;
         Ax_new = A(x_new);
-        grad_new = At(Ax_new - b);
-        error_new = norm(Ax_new, 2)^2 + delta*norm(x_new, 2)^2;
+        grad_new = At(Ax_new - b) + delta*x_new;
+        error_new = 0.5*norm(Ax_new-b, 2)^2 + 0.5*delta*norm(x_new, 2)^2;
+        %error_new = err(x_new);
         n_new = anorm_1d(x_new, norm_type, w);
     else
         terminate = 1;
         x_new = x; 
-        error_new = error;
+        error_new = error_old;
         n_new = n;
     end
     
-    error_gap = error - error_new;
+    error_gap = error_old - error_new;
     
     run_log.error_list(k) = error_new;
     run_log.atomic_norm(k) = n_new;
@@ -83,8 +96,12 @@ while ~terminate
     x = x_new;
     Ax = Ax_new;
     grad = grad_new;
-    n = n_new;
-    
+    error_old = error_new;
+    n = n_new;   
+    k = k + 1;    
 end
 
 toc
+
+x_final = x_new;
+end

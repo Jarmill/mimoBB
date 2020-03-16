@@ -38,7 +38,6 @@ opt.FreqResponse = G.ResponseData;
 
 
 fprintf('Starting Randomization\n')
-pp = pole(sys);
 [ha,p, scales, groups, f, L] = createAtoms(Ns,opt);
 
 

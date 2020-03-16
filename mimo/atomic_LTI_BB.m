@@ -186,17 +186,30 @@ if isfield(In, 'warm_start')
      BB_opt.export_warm_start = 1;
 end
 
+
+
 tic
 %Run the optimization routine
-[x_final, S_final, c_final, run_log] = BB_operator(operator, b, BB_opt);
+
+if opt.FCFW
+    [x_final, S_final, c_final, run_log] = BB_operator(operator, b, BB_opt);
+    out.Atoms = S_final;
+    out.AtomCoeff = c_final;
+else
+    [x_final, run_log] = BB_forward(operator, b, BB_opt);
+end
+
+
 %[~, x_norm] = LMO_1d(x_final, opt.NormType, w);
 %fprintf('Gap: %0.3e\n', opt.tau - x_norm)
 out.time = toc;
 
 
 out.Coeff0 = x_final;
-out.Atoms = S_final;
-out.AtomCoeff = c_final;
+
+
+
+
 out.run_log = run_log;
 
 
