@@ -258,6 +258,8 @@ residues = [];
 
 out.sys_out= 0;
 out.sys_modes = {}; %In.sys_modes;
+out.poles_active_ind = [];
+out.poles_active = [];
 z = tf('z', 1);
 for gi = 1:Ngroups
     g_curr = w.groups{gi};    
@@ -276,18 +278,19 @@ for gi = 1:Ngroups
                 weights_new(end+1) = w.order(gi)/(delta +  x_max_curr);
             end
         end       
+        poles_curr = p(g_curr);
+        
         out.group_active(end+1) = gi;
+        out.poles_active_ind = [out.poles_active_ind; g_curr'];
+        out.poles_active = [out.poles_active poles_curr];
         
         %Return the resultant system
         if opt.FormSystem
             x_curr_box = reshape(full(x_curr), ny, nu, []);
-            poles_curr = In.PoleArray(In.PoleGroups == gi);
+            %poles_curr = In.PoleArray(In.PoleGroups == gi);
             %scales_curr = getScales(poles_curr(1), Ns);
             %use complex scales instead
-            scale_curr = getScales2(poles_curr(1), Ns);
-            
-
-            %should this be * or / ?
+            scale_curr = getScales2(poles_curr(1), Ns);           
 
 
             if w.order(gi) == 1
@@ -297,17 +300,21 @@ for gi = 1:Ngroups
 
                 res_cos =  x_curr_box(:, :, 1)*scale_curr;
                 res_sin =  x_curr_box(:, :, 2)*scale_curr;
-                num   = res_cos + z*res_sin;
-                denom = (z - poles_curr(1) )*(z-poles_curr(2));
-
-                %sys_curr = (num/2) / denom;
-                sys_curr = (num/2) / denom;
+                      
+                num_std  = res_cos - 1.0j*res_sin;
+                num_conj = res_cos + 1.0j*res_sin;
+                
+                sys_std = num_std/(z - poles_curr(1));
+                
+                sys_conj = num_conj/(z - poles_curr(2));
+                
+                
+                sys_curr = (sys_std + sys_conj);
+                
             end
             
             sys_curr = zpk(sys_curr);
-
-            %residues = cat(3, residues, x_curr_box/scales_curr);
-
+          
             out.sys_out = out.sys_out + sys_curr;
             out.sys_modes{end+1} = sys_curr;
         end
@@ -316,20 +323,11 @@ for gi = 1:Ngroups
 end
 
 out.system_order =full(sum(w.order(out.group_active)));
-
-
-%weights_new  = weights_new * opt.tau/length(weights_new);
-%out.PoleGroupWeights_new = weights_new;
-
-%Do I want to deal with reloading atoms?
-%Allow for slippage (sloppiness?)
-%out.tau = opt.tau;
-out.tau = weights_old*x_max';
-
+out.tau = opt.tau;
 weights_new_norm = weights_new * out.tau/ (weights_new*x_max');
 out.PoleGroupWeights_new = weights_new_norm;
 out.PoleGroupWeights_old = weights_old;
-weight_compare = [weights_old; weights_new_norm]*x_max';
+%weight_compare = [weights_old; weights_new_norm]*x_max';
 
 out.norm_max = x_max;
 
@@ -342,8 +340,9 @@ out.PoleGroupWeights_new_all = weights_new_all;
 %out.PoleGroupWeights_new = out.PoleGroupWeights_new*...
 %    length(out.PoleGroupWeights_new)/sum(out.PoleGroupWeights_new);
 
-out.poles_active_ind = any(In.PoleGroups == out.group_active', 1);
-out.poles_active = In.PoleArray(out.poles_active_ind)';
+% out.poles_active_ind = any(In.PoleGroups == out.group_active', 1);
+% out.poles_active = In.PoleArray(out.poles_active_ind)';   <-- THERES THE
+% BS TRANSPOSE THAT IS SWITCHING MY SIGNS! (swear words go here)
 
 out.w = w;
 % new pole groups

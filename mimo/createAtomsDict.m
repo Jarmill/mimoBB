@@ -38,8 +38,9 @@ p_real = [p(Ir),-p(Ir)];
 
 %p_comp_0 = [p(~Ir),-p(~Ir)];
 %p_comp = [p(~Ir),conj(p(~Ir)),-p(~Ir),conj(-p(~Ir))];
-p_comp_0 = [p(~Ir),-p(~Ir)];
-p_comp = [ interleave2(p(~Ir),conj(p(~Ir))), interleave2(-p(~Ir),conj(-p(~Ir)))];
+p_comp_0 = [p(~Ir),-conj(p(~Ir))];
+%p_comp = [ interleave2(p(~Ir),conj(p(~Ir))), interleave2(-p(~Ir),conj(-p(~Ir)))];
+p_comp = [ interleave2(p(~Ir),conj(p(~Ir))), interleave2(conj(-p(~Ir)), -p(~Ir))];
 
 p2 = [p_real, p_comp_0];
 p = [p_real, p_comp];
@@ -56,16 +57,18 @@ else
     h = [zeros(1,k);ones(1,k);cumprod(p2(ones(1,Ns-2),:))];
 end
 Ic = (2*nr0+1):numel(p2);
-hc1 = 2*real(h(:,Ic));
-hc1p = hc1(:,1:nc0);
-hc1n = hc1(:,nc0+1:end);
-hc2 = -2*imag(h(:,Ic));
-hc2p = hc2(:,1:nc0);
-hc2n = hc2(:,nc0+1:end);
+hc_real = 2*real(h(:,Ic));
+
+hc_realp = hc_real(:,1:nc0);
+hc_realn = hc_real(:,nc0+1:end);
+%hc_imag = -2*imag(h(:,Ic));
+hc_imag = 2*imag(h(:,Ic));
+
+hc_imagp = hc_imag(:,1:nc0);
+hc_imagn = hc_imag(:,nc0+1:end);
 
 
-h = [h(:,1:2*nr0),interleave2(hc1p,hc2p, 'col'),interleave2(hc1n,hc2n, 'col')];
-%h = [h(:,1:2*nr0),hc1p,hc2p,hc1n,hc2n];
+h = [h(:,1:2*nr0),interleave2(hc_realp,hc_imagp, 'col'),interleave2(hc_realn,hc_imagn, 'col')];
 h = h.*scales;
 
 %Frequency response
