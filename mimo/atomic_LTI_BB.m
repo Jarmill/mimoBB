@@ -278,28 +278,29 @@ for gi = 1:Ngroups
                 weights_new(end+1) = w.order(gi)/(delta +  x_max_curr);
             end
         end       
-        poles_curr = p(g_curr);
+        poles_curr_ind = find(In.PoleGroups == gi);
+        poles_curr = In.PoleArray(poles_curr_ind );
         
         out.group_active(end+1) = gi;
-        out.poles_active_ind = [out.poles_active_ind; g_curr'];
+        out.poles_active_ind = [out.poles_active_ind poles_curr_ind];
         out.poles_active = [out.poles_active poles_curr];
         
         %Return the resultant system
         if opt.FormSystem
             x_curr_box = reshape(full(x_curr), ny, nu, []);
-            %poles_curr = In.PoleArray(In.PoleGroups == gi);
-            %scales_curr = getScales(poles_curr(1), Ns);
+            %
+            scales_curr = getScales(poles_curr, Ns);
             %use complex scales instead
-            scale_curr = getScales2(poles_curr(1), Ns);           
+            %scale_curr = getScales2(poles_curr(1), Ns);           
 
 
             if w.order(gi) == 1
-                residue_curr = x_curr_box*scale_curr;
+                residue_curr = x_curr_box*scales_curr;
                 sys_curr = residue_curr/(z - poles_curr);
             else
 
-                res_cos =  x_curr_box(:, :, 1)*scale_curr;
-                res_sin =  x_curr_box(:, :, 2)*scale_curr;
+                res_cos =  x_curr_box(:, :, 1)*scales_curr(1);
+                res_sin =  x_curr_box(:, :, 2)*scales_curr(2);
                       
                 num_std  = res_cos - 1.0j*res_sin;
                 num_conj = res_cos + 1.0j*res_sin;

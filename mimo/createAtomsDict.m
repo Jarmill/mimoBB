@@ -38,16 +38,21 @@ p_real = [p(Ir),-p(Ir)];
 
 %p_comp_0 = [p(~Ir),-p(~Ir)];
 %p_comp = [p(~Ir),conj(p(~Ir)),-p(~Ir),conj(-p(~Ir))];
-p_comp_0 = [p(~Ir),-conj(p(~Ir))];
-%p_comp = [ interleave2(p(~Ir),conj(p(~Ir))), interleave2(-p(~Ir),conj(-p(~Ir)))];
-p_comp = [ interleave2(p(~Ir),conj(p(~Ir))), interleave2(conj(-p(~Ir)), -p(~Ir))];
+
+p_comp_0 = [p(~Ir),-p(~Ir)];
+p_comp = [ interleave2(p(~Ir),conj(p(~Ir))), interleave2(-p(~Ir),conj(-p(~Ir)))];
+
+%p_comp_0 = [p(~Ir),-conj(p(~Ir))];
+%p_comp = [ interleave2(p(~Ir),conj(p(~Ir))), interleave2(conj(-p(~Ir)), -p(~Ir))];
 
 p2 = [p_real, p_comp_0];
 p = [p_real, p_comp];
 
 % duplicate scales for negative atoms.
 %scales = [scales(1:nr0),scales(1:nr0),scales(nr0+1:end),scales(nr0+1:end)];
-[scales, L] = getScales2(p, Ns);
+
+[scales, L] = getScales(p2, Ns);
+%[scales, L] = getScales2(p, Ns);
 %Time response
 k = numel(p2);
 

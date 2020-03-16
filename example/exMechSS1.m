@@ -67,7 +67,8 @@ opt.FreqWeight = W;
 opt.IncludeConstant = false;
 opt.Compare = 0;
 %opt.tau = 0.6;
-opt.tau = 0.7;
+%opt.tau = 0.8;
+opt.tau = 0.8;
 %opt.tau = 1.0;
 %opt.tau = 0.8;
 %opt.tau = 1.5;
@@ -141,10 +142,10 @@ if DRAW
    %compare()
    %[yp, fit, xi] = compare(z,syse,'init','z')
    compare(z,syse,'init','z')
-   hold on
-   plot(y, 'k')
-   plot(out.y, 'r')
-   hold off
+   %hold on
+   %plot(y, 'k')
+   %plot(out.y, 'r')
+   %hold off
 end
 
 %------------------------------------------------------------------------------------
