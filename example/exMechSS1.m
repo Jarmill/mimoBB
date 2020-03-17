@@ -57,7 +57,8 @@ Ns = size(z,1);
 %W = 0*ones(ny,nu,Nf)*Ns/Nf;
 W = [];
 
-opt = sisoAtomOptions;
+%opt = sisoAtomOptions;
+opt = mimoAtomOptions;
 opt.r1 = 0.9;
 opt.phi2 = 0.5*pi;
 

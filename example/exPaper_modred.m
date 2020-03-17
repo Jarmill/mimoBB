@@ -8,6 +8,7 @@ t = linspace(0,0.03,5000);
 step(sys1,t);
 %}
 
+
 %{
 [M,C,K,B,F] = getMECHSS('ASML1');
 sys2 = mechss(M,C,K,B,F);
@@ -82,7 +83,8 @@ opt.Compare = 0;
 opt.tau = .001;
 opt.RandomRounds = 20;
 opt.ReweightRounds = 20;
-opt.NumAtoms = 10000;
+%opt.NumAtoms = 10000;
+opt.NumAtoms = 1000;
 opt.NormType = Inf;
 opt.FormSystem = true;
 if SOLVE

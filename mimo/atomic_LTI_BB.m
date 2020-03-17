@@ -26,7 +26,6 @@ y = In.ym;
 u = In.u;
 
 tau = opt.tau;
-t_max = opt.MaxIterTrace;
 [Ns,ny] = size(y);
 nu = size(u,2);
 
@@ -169,7 +168,8 @@ BB_opt.num_var = nu*ny*np;
 BB_opt.tau = tau;
 BB_opt.w = w;
 %BB_opt.delta = 0;
-BB_opt.delta = 1e-4;
+%BB_opt.delta = 1e-4;
+BB_opt.delta = opt.delta;
 %BB_opt.norm_type = 2;
 %BB_opt.norm_type = Inf;
 BB_opt.norm_type = In.NormType;

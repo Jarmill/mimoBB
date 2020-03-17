@@ -24,20 +24,20 @@ function [h,p_out,scales, groups, f, L] = createAtoms(NumSamples,opt)
 
 
 groups = [];
-if opt.Type=="TC"
-   h = [];
-   for ct = 1:numel(opt.Alpha)
-      h = [h,kernelSS(opt.Alpha(ct),NumSamples)];
-   end
-   scales = [];
-   p = 1:size(h,2);
-   return
-elseif any(opt.Type==["spline","random"])
-   h = createSSAtoms(NumSamples,opt);
-   scales = [];
-   p = 1:size(h,2);   
-   return;
-end
+% if opt.Type=="TC"
+%    h = [];
+%    for ct = 1:numel(opt.Alpha)
+%       h = [h,kernelSS(opt.Alpha(ct),NumSamples)];
+%    end
+%    scales = [];
+%    p = 1:size(h,2);
+%    return
+% elseif any(opt.Type==["spline","random"])
+%    h = createSSAtoms(NumSamples,opt);
+%    scales = [];
+%    p = 1:size(h,2);   
+%    return;
+% end
 
 C = opt.IncludeConstant;
 FreqSample = opt.FreqSample;

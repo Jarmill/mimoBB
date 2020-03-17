@@ -17,12 +17,7 @@ classdef sisoAtomOptions <handle
       % spline: first order spline atoms parameterized by 0<=alpha<=1
       % random: same as spline, but alpha is changed in each iteration
       Type(1,1)string{mustBeMember(Type,["rational","spline","random","TC"])} = "rational"; 
-      
-      % FOSS: Alpha is a scalar; MFOSS: Row vector
-      % When Type="random", the specified Alpha value is used only for the
-      % first iteration
-      Alpha(1,:)double {mustBeNonnegative,mustBeLessThanOrEqual(Alpha,1)} = 0.6 % SS atom frequency constant 
-      
+
       % Rational atom circle sector configured by radius and angle limits
       r1(1,1)double {mustBeNonnegative,mustBeLessThanOrEqual(r1,1)} = 0; % lower radius bound for rational atoms
       r2(1,1)double {mustBeNonnegative,mustBeLessThanOrEqual(r2,1)} = 1; % upper radius bound for rational atoms
@@ -51,16 +46,14 @@ classdef sisoAtomOptions <handle
      
       %group norm used in atomic penalty
       NormType(1,1)double{mustBePositive} = Inf;
+      Delta
       
       %Frequency domain parameters
       FreqWeight= [];     % Weights for frequency domain fitting
       FreqSample = [];    % frequencies to sample at
       FreqResponse = [];  % frequency response 
       
-      % Are we minimizing the determinant criterion det(EE') or the trace
-      % criterion trace(EE')? Matters only in multi-output case. 
-      IsDet = false; % trace or det criterion
-      
+     
       % Trace weighting matrix when IsDet is FALSE. Specify as ny-by-ny psd
       % matrix (ny := number of model outputs)
       Wt = 1; 
