@@ -46,8 +46,10 @@ end
 
 out = atomic_LTI_BB(In,opt); 
 
-opt_fw = opt;
-opt_fw.FCFW = 0;
-out_fw = atomic_LTI_BB(In,opt_fw);
+%opt_fw = opt;
+%opt_fw.FCFW = 0;
+%out_fw = atomic_LTI_BB(In,opt_fw);
+
+opt_fw = atomic_LTI(In, opt);
 
 end

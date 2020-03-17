@@ -14,8 +14,7 @@ sys2 = mechss(M,C,K,B,F);
 w = logspace(1,7,10000);
 sigma(sys2,w);
 %}
-%clear,
-%close all,clc
+clear,close all,clc
 warning off 'MATLAB:nearlySingularMatrix'
 warning off 'MATLAB:singularMatrix'
 
@@ -32,16 +31,25 @@ zd = z(1:2e4);
 %}
 
 rng(2)
-sys = rss(4);
-%pole(sys)
-Ts = 0.04;
-t = (0:Ts:25)';
-y=step(sys,t);
-z = iddata(y,ones(size(y)),Ts);
-w = logspace(-1,1,50);
-G=idfrd(frd(sys,w));
-G.Frequency = G.Frequency/25;
-z.Ts=1;
+sys = rss(4)*zpk([-1],[-0.01+.8i,-0.01-.8i],100);
+sysaug = sys*zpk([],[-0.1+8i,-0.1-8i,-0.001+10i,-0.001-10i],-1);
+%bodemag(sysaug)
+%step(sysaug)
+
+% story: we want good fit for first two modes. the higher ones are FEWM
+% appriximation related and no good fit is required for them. It is
+% desirable that the identified plant has low gain at freq >5 rad/s
+
+Ts=0.0625;
+t=(0:Ts:200)';
+y=step(sysaug,t);
+sysd = c2d(sysaug,Ts);
+
+% rescale for algorithm convenience
+sysd.Ts = 1;
+z = iddata(y,ones(size(y)),1,'Tstart',0);
+w = logspace(-2,log10(pi),100);
+G = idfrd(sysd,w);
 
 %zd=resample(z,1,2);
 %zd.Ts = 1;
@@ -49,67 +57,58 @@ z.Ts=1;
 ny = 1;
 nu = 1;
 SOLVE = 1;
-FORWARD = 0;
 DRAW = 1;
 Nf = numel(G.Frequency);
 Ns = size(z,1);
 %W = (ones(ny,nu,Nf)./max(1e-6,sqrt(abs(G.ResponseData))))*Ns/Nf;
-%W = 0*ones(ny,nu,Nf)*Ns/Nf;
-W = [];
+wI=find(w>0.334,1,'first');
+W = ones(Nf,1);
+G1 = G;
+%G1.ResponseData(:,:,wI:end) = 1e-5;
+W(1:wI-1) = 1./abs(squeeze(G1.ResponseData(:,:,1:wI-1)));
+W(wI:end) = eps;
+W = permute(W,[2 3 1]);
+%W = ones(ny,nu,Nf)*Ns/Nf;
 
 opt = sisoAtomOptions;
-opt.r1 = 0.9;
-opt.phi2 = 0.5*pi;
-
+opt.r1 = 0.8;
+opt.phi2 = pi/4;
 
 opt.FreqWeight = W;
 %opt.FreqWeight = ones(Ns, ny);
 %opt.Compare = 1;
-opt.IncludeConstant = false;
+opt.IncludeConstant = 0;
 opt.Compare = 0;
-%opt.tau = 0.6;
-%opt.tau = 0.8;
-opt.tau = 0.8;
-%opt.tau = 1.0;
-%opt.tau = 0.8;
-%opt.tau = 1.5;
+opt.tau = .001;
 opt.RandomRounds = 20;
 opt.ReweightRounds = 20;
-opt.NumAtoms = 1000;
+opt.NumAtoms = 10000;
 opt.NormType = Inf;
 opt.FormSystem = true;
 if SOLVE
-   [out, out_random] = localSolve(z,G,opt); % target cost: 83202.8
+   [out, out_random] = localSolve(z,G1,opt); % target cost: 83202.8
    
-    if opt.Compare
-        utGenAnalysisPlots(out,sys) % quality analysis
-    end
-   
-    if FORWARD
-       
-        Tu = toeplitz(z.u,[z.u(1) zeros(1,length(z.u)-1)]);
-        In_fw.ym = z.y;
-        In_fw.tau.tauAtom = opt.tau;
-        In_fw.T = Tu;
-        In_fw.t_max = 5000;
-        In_fw.k = 150;
-        out_fw = atomic_SISO(In_fw);
-        
-    end
-   
+   if opt.Compare
+      utGenAnalysisPlots(out,sys) % quality analysis
+   end
 end
 
 s=out.sys_modes;
-s=cellfun(@(x)zpk(x),s,'uni',0);
-syse=s{1};
-for ct = 2:numel(s)
-   syse=syse+s{ct};
+H=zeros(Ns,numel(s));
+for ct=1:numel(s),H(:,ct)=impulse(s{ct},Ns-1); end
+Tu = toeplitz(z.u ,[z.u(1); zeros(Ns-1,1)]);
+TuH=Tu*H;
+c=TuH\z.y;
+syse=s{1}*c(1);for ct = 2:numel(s),syse=syse+s{ct}*c(ct);end
+if order(syse)>6
+   sysed=balred(syse,6);
+else
+   sysed = syse;
 end
 
-
 if DRAW
-   figure(1)
-   FS = 18;
+   figure
+   FS = 10;
    clf
    % cm_viridis=viridis(m);
    % colormap(cm_viridis)
@@ -129,8 +128,7 @@ if DRAW
    xlabel('Re(z)')
    ylabel('Im(z)')
    xticks([-1,-0.5,0,0.5,1])
-   yticks([-1,-0.5,0,0.5,1])
-   
+   yticks([-1,-0.5,0,0.5,1])   
    
    subplot(1,2,2)
    hold on
@@ -147,37 +145,12 @@ if DRAW
    xticks([-1,-0.5,0,0.5,1])
    yticks([-1,-0.5,0,0.5,1])
    
-   figure(2)
-   clf
-   bodemag(G,syse)
+   figure
+   bodemag(G1,'k',syse,'r',sysed,'g',G.Frequency)
+   legend('show')
    
-   figure(3)
-   clf
-   %compare()
-   %[yp, fit, xi] = compare(z,syse,'init','z')
-   compare(z,syse,'init','z')
-   
-   if FORWARD
-       figure(4)
-       clf
-          hold on
-          
-           th = linspace(0, 2*pi,  201);
-           plot(real(out_fw.p_list), imag(out_fw.p_list), '.', 'Color', 0.7*[1,1,1])           
-           scatter(real(out.poles_active), imag(out.poles_active), 200, 'xk')
-           plot(cos(th), sin(th), 'k')
-           hold off
-           axis square
-           title('Active-set vs. Forward Poles', 'Fontsize', FS)
-           xlabel('Re(z)')
-           ylabel('Im(z)')
-           xticks([-1,-0.5,0,0.5,1])
-           yticks([-1,-0.5,0,0.5,1])
-   end
-   %hold on
-   %plot(y, 'k')
-   %plot(out.y, 'r')
-   %hold off
+   figure
+   compare(z,syse,sysed,'init','z')
 end
 
 %------------------------------------------------------------------------------------
@@ -197,15 +170,18 @@ In  = struct('ym',z.y,'u',z.u,'Ts',z.Ts,'ImpRespArray',ha,'PoleArray',p,...
 
 In.ImpRespArray = ha;
 In.FreqRespArray = f;
-%In.sys_modes = {};
+
+
 cost_list = [];
+card_list  = [];
+order_list = [];
 
 if ~opt.RandomRounds && ~opt.ReweightRounds
    opt.FormSystem = 1;
 end
 
 out = atomic_LTI_BB(In,opt);
-cost_list_random = [cost_list; out.cost];
+
 fprintf('Cost: %0.3e \t Order: %i \t Time: %0.4f \n',out.cost, out.system_order, out.time)
 
 %Multiple rounds of randomizing poles
@@ -262,16 +238,18 @@ for i = 1:(opt.RandomRounds)
    end
    %
    out = atomic_LTI_BB(In,opt);
-   %In.sys_modes = out.sys_modes;
-   cost_list_random = [cost_list_random; out.cost];
+    cost_list = [cost_list; out.cost];
+    card_list = [card_list; length(out.AtomCoeff)];
+    order_list = [order_list; out.system_order];
    fprintf('Cost: %0.3e \t (dCost = %0.3e) \t Order: %i \t  Time: %0.4f \n', out.cost, out.cost - cost_old, out.system_order, out.time)
    
 end
 
 %In = rmfield(In, 'warm_start');
-cost_old = out.cost;
 fprintf('Starting Reweighting\n')
-out.cost_list_random = cost_list_random;
+out.cost_list = cost_list;
+out.card_list = card_list;
+out.order_list = order_list;
 
 out_random = out;
 
@@ -282,8 +260,6 @@ for i = 1:(opt.ReweightRounds)
    
    cost_old = out.cost;
    active_ind = out.poles_active_ind;
-   opt.tau = out.tau;
-   
    
    if TRUE_WARM_START
       %prepare warm start for reweighted heuristic
@@ -385,18 +361,17 @@ for i = 1:(opt.ReweightRounds)
    In.PoleGroups = out.PoleGroups_new;
    In.PoleArray = out.poles_active;
    
-   %In.PoleGroupWeights = out.PoleGroupWeights_new_all;
-   
-   
    if (i == opt.ReweightRounds)
       opt.FormSystem = 1;
    end
    
    out = atomic_LTI_BB(In,opt);
-   %In.sys_modes = out.sys_modes;
+    cost_list = [cost_list; out.cost];
+    card_list = [card_list; length(out.AtomCoeff)];
+    order_list = [order_list; out.system_order];
+   
    fprintf('Cost: %0.3e \t (dCost = %0.3e) \t Order: %i \t  Time: %0.4f \n', out.cost, out.cost - cost_old, out.system_order, out.time)
    
-   cost_list_reweight = [cost_list_reweight; out.cost];
    
    if abs(out.cost - cost_old) <= opt.ReweightTol
       break
@@ -407,11 +382,10 @@ end
 
 out.cost_list_reweight = cost_list_reweight;
 
-%Extract system
 
-c=out.Coeff{1};
-p=out.poles_active;
-
+out.cost_list = cost_list;
+out.card_list = card_list;
+out.order_list = order_list;
 
 if opt.Compare
    % Num = out.h';
