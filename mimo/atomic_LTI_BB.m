@@ -258,7 +258,7 @@ out.cost = run_log.error_list(end); %this is cheating, why are the values in dis
 
 
 %reweighting?
-delta = 1e-4;
+epsilon = 1e-4;
 %delta = 0;
 out.group_active =  [];
 %out.PoleGroupWeights_old_all = gw;
@@ -283,12 +283,12 @@ for gi = 1:Ngroups
         x_max(end+1) = x_max_curr;
         weights_old(end+1) = gw(gi);
         if SAME_WEIGHT
-            weights_new(end+1) = 1/(delta +  x_max_curr);
+            weights_new(end+1) = 1/(epsilon +  x_max_curr);
         else
             if gi == 1 && p(1) == 1
-                weights_new(end+1) = In.ConstWeight/(delta +  x_max_curr);
+                weights_new(end+1) = In.ConstWeight/(epsilon +  x_max_curr);
             else    
-                weights_new(end+1) = w.order(gi)/(delta +  x_max_curr);
+                weights_new(end+1) = w.order(gi)/(epsilon +  x_max_curr);
             end
         end       
         poles_curr_ind = find(In.PoleGroups == gi);
