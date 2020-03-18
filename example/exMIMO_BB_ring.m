@@ -1,6 +1,7 @@
 load('ring_sys.mat')
 
 SOLVE = 1;
+FORWARD = 1;
 DRAW = 1;
 
 rng(77, 'twister')
@@ -24,10 +25,16 @@ opt.ReweightRounds = 10;
 opt.NumAtoms = 1e3;
 opt.NormType = Inf;
 opt.FormSystem = 1;
-opt.FCFW = 0;
+opt.FCFW = 1;
+%opt.delta = 1;
 if SOLVE
 [out, out_random] = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
 
+opt.FCFW = 0;
+opt.RandomRounds = 0;
+opt.ReweightRounds = 0;
+
+[out_fw, out_random] = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
 if opt.Compare
     utGenAnalysisPlots(out,sys) % quality analysis
 end

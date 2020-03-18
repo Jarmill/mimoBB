@@ -11,7 +11,7 @@ close all
 Ns = 1000; nu = 3; ny = 2; nx = 5;
 %Ns = 5; nu = 1; ny = 1; nx = 5;
 SNR = 30; % signal_var/noise_var
-opt = sisoAtomOptions;
+opt = mimoAtomOptions;
 opt.ShowProgressPlot = true;
 opt.IncludeConstant = true;
 opt.ModelType = "ss"; 

@@ -48,8 +48,8 @@ z.Ts=1;
 %opt=ssestOptions;opt.WeightingFilter='inv';opt.Enforce=true;
 ny = 1;
 nu = 1;
-SOLVE = 1;
-FORWARD = 0;
+SOLVE = 0;
+FORWARD = 1;
 DRAW = 1;
 Nf = numel(G.Frequency);
 Ns = size(z,1);
@@ -118,10 +118,17 @@ if DRAW
    subplot(1,2,1)
    hold on
    th = linspace(0, 2*pi,  201);
-   scatter(real(out_random.poles_active), imag(out_random.poles_active), 200,'x')
+
+   if FORWARD
+       plot(real(out_fw.p_list), imag(out_fw.p_list), '.', 'Color', 0.7*[1,1,1]);      
+       text(-0.8, 0, sprintf('Order:\nFCFW Cost:\nFW Cost:'), 'Fontsize', FS);
+       text(-0.1, 0, sprintf('%i\n%0.2e\n%0.2e', out_random.system_order, out_random.cost, out_fw.cost(end)), 'Fontsize', FS);
+   else
+       text(-0.4, 0, sprintf('Order:\nCost:'), 'Fontsize', FS);
+       text(0.1, 0, sprintf('%i\n%0.2e', out_random.system_order, out_random.cost), 'Fontsize', FS);
+   end
+  scatter(real(out_random.poles_active), imag(out_random.poles_active), 200,'xk')
    plot(cos(th), sin(th), 'k')
-   text(-0.4, 0, sprintf('Order:\nCost:'), 'Fontsize', FS)
-   text(0.1, 0, sprintf('%i\n%0.2e', out_random.system_order, out_random.cost), 'Fontsize', FS)
    hold off
    axis square
    box off
@@ -136,10 +143,18 @@ if DRAW
    subplot(1,2,2)
    hold on
    th = linspace(0, 2*pi,  201);
-   scatter(real(out.poles_active), imag(out.poles_active), 200, 'x')
+
+   if FORWARD
+       plot(real(out_fw.p_list), imag(out_fw.p_list), '.', 'Color', 0.7*[1,1,1]);      
+       text(-0.8, 0, sprintf('Order:\nFCFW Cost:\nFW Cost:'), 'Fontsize', FS);
+       text(-0.1, 0, sprintf('%i\n%0.2e\n%0.2e', out.system_order, out.cost, out_fw.cost(end)), 'Fontsize', FS);
+   else
+       text(-0.4, 0, sprintf('Order:\nCost:'), 'Fontsize', FS);
+       text(0.1, 0, sprintf('%i\n%0.2e', out.system_order, out.cost), 'Fontsize', FS);
+   end
+   scatter(real(out.poles_active), imag(out.poles_active), 200, 'xk')
    plot(cos(th), sin(th), 'k')
-   text(-0.4, 0, sprintf('Order:\nCost:'), 'Fontsize', FS)
-   text(0.1, 0, sprintf('%i\n%0.2e', out.system_order, out.cost), 'Fontsize', FS)
+   
    hold off
    axis square
    title('Poles after reweighting', 'Fontsize', FS)
@@ -148,33 +163,33 @@ if DRAW
    xticks([-1,-0.5,0,0.5,1])
    yticks([-1,-0.5,0,0.5,1])
    
-   figure(2)
-   clf
-   bodemag(G,syse)
-   
-   figure(3)
-   clf
-   %compare()
-   %[yp, fit, xi] = compare(z,syse,'init','z')
-   compare(z,syse,'init','z')
-   
-   if FORWARD
-       figure(4)
-       clf
-          hold on
-          
-           th = linspace(0, 2*pi,  201);
-           plot(real(out_fw.p_list), imag(out_fw.p_list), '.', 'Color', 0.7*[1,1,1])           
-           scatter(real(out.poles_active), imag(out.poles_active), 200, 'xk')
-           plot(cos(th), sin(th), 'k')
-           hold off
-           axis square
-           title('Active-set vs. Forward Poles', 'Fontsize', FS)
-           xlabel('Re(z)')
-           ylabel('Im(z)')
-           xticks([-1,-0.5,0,0.5,1])
-           yticks([-1,-0.5,0,0.5,1])
-   end
+%    figure(2)
+%    clf
+%    bodemag(G,syse)
+%    
+%    figure(3)
+%    clf
+%    %compare()
+%    %[yp, fit, xi] = compare(z,syse,'init','z')
+%    compare(z,syse,'init','z')
+%    
+%    if FORWARD
+%        figure(4)
+%        clf
+%           hold on
+%           
+%            th = linspace(0, 2*pi,  201);
+%            plot(real(out_fw.p_list), imag(out_fw.p_list), '.', 'Color', 0.7*[1,1,1])           
+%            scatter(real(out.poles_active), imag(out.poles_active), 200, 'xk')
+%            plot(cos(th), sin(th), 'k')
+%            hold off
+%            axis square
+%            title('Active-set vs. Forward Poles', 'Fontsize', FS)
+%            xlabel('Re(z)')
+%            ylabel('Im(z)')
+%            xticks([-1,-0.5,0,0.5,1])
+%            yticks([-1,-0.5,0,0.5,1])
+%    end
    %hold on
    %plot(y, 'k')
    %plot(out.y, 'r')
