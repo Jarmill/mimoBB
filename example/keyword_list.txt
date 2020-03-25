@@ -1,0 +1,135 @@
+
+To add a keyword from the list below to the keyword selection click on it. Click again to deselect the keyword
+Keyword
+Adaptive control
+Adaptive systems
+Aerospace
+Agents-based systems
+Air traffic management
+Algebraic/geometric methods
+Automata
+Automotive control
+Autonomous systems
+Autonomous vehicles
+Biological systems
+Biologically-inspired methods
+Biomedical
+Biomolecular systems
+Boolean control networks and logic networks
+Building and facility automation
+Cellular dynamics
+Chemical process control
+Closed-loop identification
+Communication networks
+Compartmental and Positive systems
+Computational methods
+Computer-aided control design
+Constrained control
+Control applications
+Control of networks
+Control over communications
+Control system architecture
+Cooperative control
+Data storage systems
+Decentralized control
+Delay systems
+Differential-algebraic systems
+Discrete event systems
+Distributed control
+Distributed parameter systems
+Electrical machine control
+Embedded systems
+Emerging control applications
+Energy systems
+Estimation
+Fault accomodation
+Fault detection
+Fault diagnosis
+Fault tolerant systems
+Feedback linearization
+Filtering
+Finance
+Flexible structures
+Flight control
+Fluid flow systems
+Fuzzy systems
+Game theory
+Genetic regulatory systems
+Grey-box modeling
+Healthcare and medical systems
+Hierarchical control
+Human-in-the-loop control
+Hybrid systems
+Identification
+Identification for control
+Information technology systems
+Information theory and control
+Intelligent systems
+Iterative learning control
+Kalman filtering
+Large-scale systems
+Linear parameter-varying systems
+Linear systems
+LMIs
+Lyapunov methods
+Machine learning
+Manufacturing systems and automation
+Maritime control
+Markov processes
+Mean field games
+Mechatronics
+Metabolic systems
+Model Validation
+Model/Controller reduction
+Modeling
+Network analysis and control
+Networked control systems
+Neural networks
+Nonholonomic systems
+Nonlinear output feedback
+Nonlinear systems identification
+Numerical algorithms
+Observers for Linear systems
+Observers for nonlinear systems
+Optimal control
+Optimization
+Optimization algorithms
+Output regulation
+Pattern recognition and classification
+Petri nets
+PID control
+Power electronics
+Power generation
+Power systems
+Predictive control for linear systems
+Predictive control for nonlinear systems
+Process Control
+Quantized systems
+Quantum information and control
+Queueing systems
+Randomized algorithms
+Robotics
+Robust adaptive control
+Robust control
+Sampled-data control
+Sensor fusion
+Sensor networks
+Smart cities/houses
+Smart grid
+Smart structures
+Stability of hybrid systems
+Stability of linear systems
+Stability of nonlinear systems
+Statistical learning
+Stochastic optimal control
+Stochastic systems
+Subspace methods
+Supervisory control
+Switched systems
+Systems biology
+Time-varying systems
+Traffic control
+Transportation networks
+Uncertain systems
+Variable-structure/sliding-mode control
+Variational methods

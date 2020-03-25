@@ -49,7 +49,7 @@ z.Ts=1;
 ny = 1;
 nu = 1;
 SOLVE = 0;
-FORWARD = 1;
+FORWARD = 0;
 DRAW = 1;
 Nf = numel(G.Frequency);
 Ns = size(z,1);
@@ -92,7 +92,7 @@ if SOLVE
         In_fw.ym = z.y;
         In_fw.tau.tauAtom = opt.tau;
         In_fw.T = Tu;
-        In_fw.t_max = 5000;
+        In_fw.t_max = 10000;
         In_fw.k = 150;
         out_fw = atomic_SISO(In_fw);
         
@@ -109,59 +109,59 @@ end
 
 
 if DRAW
-   figure(1)
-   FS = 18;
-   clf
-   % cm_viridis=viridis(m);
-   % colormap(cm_viridis)
-   %iopzmap(out.sys_out)
-   subplot(1,2,1)
-   hold on
-   th = linspace(0, 2*pi,  201);
-
-   if FORWARD
-       plot(real(out_fw.p_list), imag(out_fw.p_list), '.', 'Color', 0.7*[1,1,1]);      
-       text(-0.8, 0, sprintf('Order:\nFCFW Cost:\nFW Cost:'), 'Fontsize', FS);
-       text(-0.1, 0, sprintf('%i\n%0.2e\n%0.2e', out_random.system_order, out_random.cost, out_fw.cost(end)), 'Fontsize', FS);
-   else
-       text(-0.4, 0, sprintf('Order:\nCost:'), 'Fontsize', FS);
-       text(0.1, 0, sprintf('%i\n%0.2e', out_random.system_order, out_random.cost), 'Fontsize', FS);
-   end
-  scatter(real(out_random.poles_active), imag(out_random.poles_active), 200,'xk')
-   plot(cos(th), sin(th), 'k')
-   hold off
-   axis square
-   box off
-   title('Poles before reweighting', 'Fontsize', FS)
-   
-   xlabel('Re(z)')
-   ylabel('Im(z)')
-   xticks([-1,-0.5,0,0.5,1])
-   yticks([-1,-0.5,0,0.5,1])
-   
-   
-   subplot(1,2,2)
-   hold on
-   th = linspace(0, 2*pi,  201);
-
-   if FORWARD
-       plot(real(out_fw.p_list), imag(out_fw.p_list), '.', 'Color', 0.7*[1,1,1]);      
-       text(-0.8, 0, sprintf('Order:\nFCFW Cost:\nFW Cost:'), 'Fontsize', FS);
-       text(-0.1, 0, sprintf('%i\n%0.2e\n%0.2e', out.system_order, out.cost, out_fw.cost(end)), 'Fontsize', FS);
-   else
-       text(-0.4, 0, sprintf('Order:\nCost:'), 'Fontsize', FS);
-       text(0.1, 0, sprintf('%i\n%0.2e', out.system_order, out.cost), 'Fontsize', FS);
-   end
-   scatter(real(out.poles_active), imag(out.poles_active), 200, 'xk')
-   plot(cos(th), sin(th), 'k')
-   
-   hold off
-   axis square
-   title('Poles after reweighting', 'Fontsize', FS)
-   xlabel('Re(z)')
-   ylabel('Im(z)')
-   xticks([-1,-0.5,0,0.5,1])
-   yticks([-1,-0.5,0,0.5,1])
+%    figure(1)
+%    FS = 18;
+%    clf
+%    % cm_viridis=viridis(m);
+%    % colormap(cm_viridis)
+%    %iopzmap(out.sys_out)
+%    subplot(1,2,1)
+%    hold on
+%    th = linspace(0, 2*pi,  201);
+% 
+%    if FORWARD
+%        plot(real(out_fw.p_list), imag(out_fw.p_list), '.', 'Color', 0.7*[1,1,1]);      
+%        text(-0.8, 0, sprintf('Order:\nFCFW Cost:\nFW Cost:'), 'Fontsize', FS);
+%        text(-0.1, 0, sprintf('%i\n%0.2e\n%0.2e', out_random.system_order, out_random.cost, out_fw.cost(end)), 'Fontsize', FS);
+%    else
+%        text(-0.4, 0, sprintf('Order:\nCost:'), 'Fontsize', FS);
+%        text(0.1, 0, sprintf('%i\n%0.2e', out_random.system_order, out_random.cost), 'Fontsize', FS);
+%    end
+%   scatter(real(out_random.poles_active), imag(out_random.poles_active), 200,'xk')
+%    plot(cos(th), sin(th), 'k')
+%    hold off
+%    axis square
+%    box off
+%    title('Poles before reweighting', 'Fontsize', FS)
+%    
+%    xlabel('Re(z)')
+%    ylabel('Im(z)')
+%    xticks([-1,-0.5,0,0.5,1])
+%    yticks([-1,-0.5,0,0.5,1])
+%    
+%    
+%    subplot(1,2,2)
+%    hold on
+%    th = linspace(0, 2*pi,  201);
+% 
+%    if FORWARD
+%        plot(real(out_fw.p_list), imag(out_fw.p_list), '.', 'Color', 0.7*[1,1,1]);      
+%        text(-0.8, 0, sprintf('Order:\nFCFW Cost:\nFW Cost:'), 'Fontsize', FS);
+%        text(-0.1, 0, sprintf('%i\n%0.2e\n%0.2e', out.system_order, out.cost, out_fw.cost(end)), 'Fontsize', FS);
+%    else
+%        text(-0.4, 0, sprintf('Order:\nCost:'), 'Fontsize', FS);
+%        text(0.1, 0, sprintf('%i\n%0.2e', out.system_order, out.cost), 'Fontsize', FS);
+%    end
+%    scatter(real(out.poles_active), imag(out.poles_active), 200, 'xk')
+%    plot(cos(th), sin(th), 'k')
+%    
+%    hold off
+%    axis square
+%    title('Poles after reweighting', 'Fontsize', FS)
+%    xlabel('Re(z)')
+%    ylabel('Im(z)')
+%    xticks([-1,-0.5,0,0.5,1])
+%    yticks([-1,-0.5,0,0.5,1])
    
 %    figure(2)
 %    clf
@@ -174,21 +174,38 @@ if DRAW
 %    compare(z,syse,'init','z')
 %    
 %    if FORWARD
-%        figure(4)
-%        clf
-%           hold on
-%           
-%            th = linspace(0, 2*pi,  201);
-%            plot(real(out_fw.p_list), imag(out_fw.p_list), '.', 'Color', 0.7*[1,1,1])           
-%            scatter(real(out.poles_active), imag(out.poles_active), 200, 'xk')
-%            plot(cos(th), sin(th), 'k')
-%            hold off
-%            axis square
-%            title('Active-set vs. Forward Poles', 'Fontsize', FS)
-%            xlabel('Re(z)')
-%            ylabel('Im(z)')
-%            xticks([-1,-0.5,0,0.5,1])
-%            yticks([-1,-0.5,0,0.5,1])
+       figure(4)
+       clf
+
+          subplot(1,2,1)
+            hold on
+            FS = 16
+           th = linspace(0, 2*pi,  201);
+           plot(real(out_fw.p_list), imag(out_fw.p_list), '.', 'Color', 0.7*[1,1,1])           
+           scatter(real(out.poles_active), imag(out.poles_active), 200, 'xk')
+           plot(cos(th), sin(th), 'k')
+           text(-0.8, 0.25, 'System Order:', 'Fontsize', FS)
+           text(-0.8, 0, sprintf('Active-set:\nFrank-Wolfe:'), 'Fontsize', FS);
+           text(-0.1, 0, sprintf('%i\n%i', out.system_order, length(out_fw.p_list)), 'Fontsize', FS);
+
+           hold off
+           axis square
+           title('Active-set vs. Forward Poles', 'Fontsize', FS)
+           xlabel('Re(z)')
+           ylabel('Im(z)')
+           xticks([-1,-0.5,0,0.5,1])
+           yticks([-1,-0.5,0,0.5,1])
+           
+           
+           subplot(1,2,2)
+           hold on
+           plot(out.time_list_ext, out.cost_list_ext, 'k', 'LineWidth', 3)
+           plot(out_fw.time, out_fw.cost, 'Color', 0.7*[1,1,1], 'LineWidth', 3)
+           set(gca, 'YScale', 'log')
+           ylabel('Cost')
+           xlabel('Time (sec)')
+           title('Fitting error vs. Time', 'Fontsize', FS)
+           legend({'Active-set', 'Frank-Wolfe'}, 'Location', 'NorthEast', 'Fontsize', 14)
 %    end
    %hold on
    %plot(y, 'k')
@@ -214,14 +231,27 @@ In  = struct('ym',z.y,'u',z.u,'Ts',z.Ts,'ImpRespArray',ha,'PoleArray',p,...
 In.ImpRespArray = ha;
 In.FreqRespArray = f;
 %In.sys_modes = {};
-cost_list = [];
 
 if ~opt.RandomRounds && ~opt.ReweightRounds
    opt.FormSystem = 1;
 end
 
+cost_list  = [];
+cost_list_ext = [];
+time_list = [];
+time_list_ext = [];
+order_list = [];
+
+timerVal = tic;
 out = atomic_LTI_BB(In,opt);
-cost_list_random = [cost_list; out.cost];
+cost_list = [cost_list; out.cost];
+curr_time = toc(timerVal);
+
+time_list = [time_list; curr_time];
+cost_list_ext = [cost_list_ext; out.run_log.error_list];
+time_list_ext = [time_list_ext; curr_time + out.run_log.time];
+
+order_list = [order_list; out.system_order];
 fprintf('Cost: %0.3e \t Order: %i \t Time: %0.4f \n',out.cost, out.system_order, out.time)
 
 %Multiple rounds of randomizing poles
@@ -277,21 +307,28 @@ for i = 1:(opt.RandomRounds)
       opt.FormSystem = 1;
    end
    %
+   prev_time = toc(timerVal);
    out = atomic_LTI_BB(In,opt);
    %In.sys_modes = out.sys_modes;
-   cost_list_random = [cost_list_random; out.cost];
    fprintf('Cost: %0.3e \t (dCost = %0.3e) \t Order: %i \t  Time: %0.4f \n', out.cost, out.cost - cost_old, out.system_order, out.time)
+   
+   cost_list = [cost_list; out.cost];
+   curr_time = toc(timerVal);
+   time_list = [time_list; curr_time];   
+   order_list = [order_list; out.system_order];
+   cost_list_ext = [cost_list_ext out.run_log.error_list];   
+   time_list_ext = [time_list_ext prev_time + out.run_log.time];
+
    
 end
 
 %In = rmfield(In, 'warm_start');
 cost_old = out.cost;
 fprintf('Starting Reweighting\n')
-out.cost_list_random = cost_list_random;
+
 
 out_random = out;
 
-cost_list_reweight = [];
 %In.warm_start = 1;
 %Sparsify the resultant poles through reweighted heuristic
 for i = 1:(opt.ReweightRounds)
@@ -408,20 +445,33 @@ for i = 1:(opt.ReweightRounds)
       opt.FormSystem = 1;
    end
    
+   prev_time = toc(timerVal);
    out = atomic_LTI_BB(In,opt);
+   
    %In.sys_modes = out.sys_modes;
    fprintf('Cost: %0.3e \t (dCost = %0.3e) \t Order: %i \t  Time: %0.4f \n', out.cost, out.cost - cost_old, out.system_order, out.time)
-   
-   cost_list_reweight = [cost_list_reweight; out.cost];
    
    if abs(out.cost - cost_old) <= opt.ReweightTol
       break
    end
    
    cost_old = out.cost;
+   cost_list = [cost_list; out.cost];
+   curr_time = toc(timerVal);
+   time_list = [time_list; curr_time];
+   order_list = [order_list; out.system_order];
+   cost_list_ext = [cost_list_ext out.run_log.error_list];
+   time_list_ext = [time_list_ext prev_time + out.run_log.time];
+
 end
 
-out.cost_list_reweight = cost_list_reweight;
+out.cost_list  = cost_list;
+out.time_list  = time_list;
+out.order_list = order_list;
+out.cost_list_ext  = cost_list_ext;
+out.time_list_ext  = time_list_ext;
+
+
 
 %Extract system
 
