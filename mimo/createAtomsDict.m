@@ -77,29 +77,38 @@ h = [h(:,1:2*nr0),interleave2(hc_realp,hc_imagp, 'col'),interleave2(hc_realn,hc_
 h = h.*scales;
 
 %Frequency response
-NsF = numel(w);
-z = ltipack.utGetComplexFrequencies(w,1);
-h1 = 1./(z-p(Ir));
-h1a = 1./(z+p(Ir));
-Dr = z.^2-2*real(p(~Ir)).*z+abs(p(~Ir)).^2;
-Dra = z.^2+2*real(p(~Ir)).*z+abs(p(~Ir)).^2;
-h2 = 2*imag(p(~Ir))./Dr;
-h2a = 2*imag(p(~Ir))./Dra;
-h3 = 2*(z-real(p(~Ir)))./Dr;
-h3a = 2*(z+real(p(~Ir)))./Dra;
-%f = [h1,h1a,h3,h2,h3a,h2a];
-f = [h1, h1a, interleave2(h3,h2, 'col'), interleave2(h3a, h2a, 'col')];
-f = f.*scales;
 
+if ~isempty(w)
+    NsF = numel(w);
+    z = ltipack.utGetComplexFrequencies(w,1);
+    h1 = 1./(z-p(Ir));
+    h1a = 1./(z+p(Ir));
+    Dr = z.^2-2*real(p(~Ir)).*z+abs(p(~Ir)).^2;
+    Dra = z.^2+2*real(p(~Ir)).*z+abs(p(~Ir)).^2;
+    h2 = 2*imag(p(~Ir))./Dr;
+    h2a = 2*imag(p(~Ir))./Dra;
+    h3 = 2*(z-real(p(~Ir)))./Dr;
+    h3a = 2*(z+real(p(~Ir)))./Dra;
+    %f = [h1,h1a,h3,h2,h3a,h2a];
+    f = [h1, h1a, interleave2(h3,h2, 'col'), interleave2(h3a, h2a, 'col')];
+    f = f.*scales;
+else
+    f = [];
+end
 %groups = [1:nr0, nr0+(1:nr0), 2*nr0 + kron([1,1], 1:nc0), 2*nr0 + nc0 + kron([1,1], 1:nc0)];
 groups = [1:nr0, nr0+(1:nr0), 2*nr0 + kron(1:nc0, [1,1]), 2*nr0 + nc0 + kron(1:nc0, [1,1])];
 
 if C
-   %delicate to deal with L
-   p = [pc, p];
-   h = [ones(size(h,1),1) ,h];
-   groups = [1, 1+groups];
-   f = [1./(z-1), f];
+    %delicate to deal with L
+    p = [pc, p];
+    h = [ones(size(h,1),1) ,h];
+    groups = [1, 1+groups];
+    if ~isempty(w)
+        f = [1./(z-1), f];
+    else
+        f = [];
+    end
+    
 end
 
 end

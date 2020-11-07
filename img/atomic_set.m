@@ -24,7 +24,21 @@ hold on
 plot(r*cos(th_off2), r*sin(th_off2))
 plot(cos(th_off2), sin(th_off2), '--k')
 scatter(cos(th_off2), sin(th_off2), 300, '.k')
-scatter(target_x, target_y, 200,  'xk', 'linewidth', 3)
+scatter(target_x, target_y, 400,  'xk', 'linewidth', 3)
 axis off
 hold off
 
+figure(2)
+clf
+grad = 0.9*randn(2, 1);
+grad = grad/norm(grad);
+lmo = grad'*[cos(th_off); sin(th_off)];
+[m, i] = max(lmo);
+hold on
+plot(cos(th_off2), sin(th_off2), '--k')
+quiver(0,0,grad(1), grad(2), 'LineWidth', 5, 'maxheadsize', 0.6)
+scatter(cos(th_off2), sin(th_off2), 300, '.k')
+scatter(cos(th_off(i)), sin(th_off(i)), 300, 'ok')
+text(-0.45, -0.4, '$\nabla f(x)$', 'interpreter', 'latex', 'fontsize', 28)
+axis off
+hold off
