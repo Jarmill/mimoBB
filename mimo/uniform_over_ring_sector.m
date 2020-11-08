@@ -11,7 +11,22 @@ n = 10*n0;
 %Range = (rand(1,n)-0.5);
 Range = 0.5*rand(1,n); %conjugates will be sampled anyways
 theta = MinAngle + (MaxAngle-MinAngle)*Range; 
-theta(1:floor(n/10)) = 0; % at least 1/10th are pure real
+
+
+%number of real poles
+nr = floor(n/6);
+
+%some poles should be purely real
+if MaxAngle == 2*pi
+    %if negative poles are allowed by sector bound,
+    %then some real poles should be negative
+    signflip = randi(2, 1, nr)-1;
+    signflip(signflip == 1) = pi;
+    theta(1:nr)  = signflip;
+else
+    theta(1:nr) = 0;
+end
+
 theta = theta(randperm(n)); % scramble 0 angle entries
 r = sqrt(rand(1,n))*(rho2-rho1);
 p = (r+rho1).*cos(theta)+1j*(r+rho1).*sin(theta);

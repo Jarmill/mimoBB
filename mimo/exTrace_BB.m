@@ -43,7 +43,14 @@ fprintf('Starting Randomization\n')
 
 %Need to cleverly design weighting functions (to do)
 
-W = opt.FreqWeight;
+if isnumeric(opt.FreqWeight)
+    W = opt.FreqWeight;
+else
+    Wf = opt.FreqWeight(opt.FreqSample);
+    Wf = reshape(Wf, 1, 1, []);
+    Wf = repmat(Wf, ny, nu, 1);
+    W = Wf;
+end
 
 In  = struct('ym',yn,'u',u,'Ts',1,'ImpRespArray',ha,'PoleArray',p,...
      'PoleGroups', groups, 'FreqRespArray', f, 'FreqWeight', W, ...

@@ -27,7 +27,7 @@ classdef mimoAtomOptions <handle
       r1(1,1)double {mustBeNonnegative,mustBeLessThanOrEqual(r1,1)} = 0; % lower radius bound for rational atoms
       r2(1,1)double {mustBeNonnegative,mustBeLessThanOrEqual(r2,1)} = 1; % upper radius bound for rational atoms
       phi1(1,1)double {mustBeNonnegative,mustBeLessThanOrEqual(phi1,3.1415926535898)} = 0; % minimum angle, radians, for rational atoms
-      phi2(1,1)double {mustBeNonnegative,mustBeLessThanOrEqual(phi2,6.2833)} = pi; % maximum angle, radians, for rational atoms
+      phi2(1,1)double {mustBeNonnegative,mustBeLessThanOrEqual(phi2,6.2833)} = 2*pi; % maximum angle, radians, for rational atoms
       
       % Include +/- 1 as an atom, regardless of "Type" 
       IncludeConstant(1,1)logical = true; % include +/-1

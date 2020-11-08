@@ -10,34 +10,60 @@ ny = size(sys, 1);
 nu = size(sys, 2);
 
 Nf =  128;
-%W = 0.1*ones(Nf, nu, ny);
-W = 1e-2*ones(ny, nu, Nf);
+wc = 2.5;
+k = 0.1;
+% W = @(f) k ./((2*pi*1.0j.*f)/wc +1);
+% W = 0;
+%corner frequency
+% wc = 2;
+
+
+% W = 1e-2*ones(ny, nu, Nf);
+W = zeros(ny, nu, Nf);
+
+
 %W = 1e-1*ones(ny, nu, Nf);
 %W = [];
-
+opt = mimoAtomOptions;
 opt.FreqWeight = W;
 %opt.FreqWeight = ones(Ns, ny);
 %opt.Compare = 1;
 opt.Compare = 0;
-opt.tau = 200;
-opt.RandomRounds = 10;
-opt.ReweightRounds = 10;
-opt.NumAtoms = 1e3;
+% opt.tau = 200;
+% opt.tau = 250;
+% opt.tau = 300;
+% opt.tau = 500;
+opt.tau = 600;
+% opt.tau = 2000;
+opt.RandomRounds = 50;
+opt.ReweightRounds = 20;
+opt.NumAtoms = 4e2;
 opt.NormType = Inf;
 opt.FormSystem = 1;
 opt.FCFW = 1;
+
+
+%sector bounds
+opt.r1 = 0.98;
+opt.phi2 = 0.5;
 %opt.delta = 1;
 if SOLVE
 [out, out_random] = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
 
-opt.FCFW = 0;
-opt.RandomRounds = 0;
-opt.ReweightRounds = 0;
+% opt.FCFW = 0;
+% % opt.RandomRounds = 0;
+% opt.ReweightRounds = 0;
 
-[out_fw, out_random] = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
-if opt.Compare
-    utGenAnalysisPlots(out,sys) % quality analysis
+% [out_fw, out_random] = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8
+% if opt.Compare
+%     utGenAnalysisPlots(out,sys) % quality analysis
+% end
+
+sys_all = 0;
+for i = 1:length(out.sys_modes)
+    sys_all = sys_all + out.sys_modes{i};
 end
+
 end
 
 if DRAW
@@ -79,5 +105,23 @@ xlabel('Re(z)')
 ylabel('Im(z)')
 xticks([-1,-0.5,0,0.5,1])
 yticks([-1,-0.5,0,0.5,1])
+
+figure(3)
+clf
+subplot(2, 1, 1)
+hold on
+plot(out.y_orig(:, 1))
+plot(out.y(:, 1))
+xlabel('time')
+ylabel('y1')
+
+
+subplot(2, 1, 2)
+hold on
+plot(out.y_orig(:, 2))
+plot(out.y(:, 2))
+xlabel('time')
+ylabel('y2')
+
 
 end

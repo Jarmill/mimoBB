@@ -34,13 +34,17 @@ nr0 = sum(Ir); nc0 = numel(p)-nr0;
 % duplicate scales for negative atoms.
 %[scales,L] = getScales(p,Ns); % nr0+2*nc0 elements
 %[scales,L] = getScales2(p,Ns); % nr0+2*nc0 elements
-p_real = [p(Ir),-p(Ir)];
+% p_real = [p(Ir),-p(Ir)];
+p_real = [p(Ir)];
 
 %p_comp_0 = [p(~Ir),-p(~Ir)];
 %p_comp = [p(~Ir),conj(p(~Ir)),-p(~Ir),conj(-p(~Ir))];
 
-p_comp_0 = [p(~Ir),-p(~Ir)];
-p_comp = [ interleave2(p(~Ir),conj(p(~Ir))), interleave2(-p(~Ir),conj(-p(~Ir)))];
+% p_comp_0 = [p(~Ir),-p(~Ir)];
+% p_comp = [ interleave2(p(~Ir),conj(p(~Ir))), interleave2(-p(~Ir),conj(-p(~Ir)))];
+p_comp_0 = p(~Ir);
+p_comp = interleave2(p(~Ir),conj(p(~Ir)));
+
 
 %p_comp_0 = [p(~Ir),-conj(p(~Ir))];
 %p_comp = [ interleave2(p(~Ir),conj(p(~Ir))), interleave2(conj(-p(~Ir)), -p(~Ir))];
@@ -61,19 +65,19 @@ if length(time_samples) > 1
 else
     h = [zeros(1,k);ones(1,k);cumprod(p2(ones(1,Ns-2),:))];
 end
-Ic = (2*nr0+1):numel(p2);
+Ic = (nr0+1):numel(p2);
 hc_real = 2*real(h(:,Ic));
 
-hc_realp = hc_real(:,1:nc0);
-hc_realn = hc_real(:,nc0+1:end);
+% hc_realp = hc_real(:,1:nc0);
+% hc_realn = hc_real(:,nc0+1:end);
 %hc_imag = -2*imag(h(:,Ic));
 hc_imag = 2*imag(h(:,Ic));
 
-hc_imagp = hc_imag(:,1:nc0);
-hc_imagn = hc_imag(:,nc0+1:end);
+% hc_imagp = hc_imag(:,1:nc0);
+% hc_imagn = hc_imag(:,nc0+1:end);
 
-
-h = [h(:,1:2*nr0),interleave2(hc_realp,hc_imagp, 'col'),interleave2(hc_realn,hc_imagn, 'col')];
+h = [h(:,1:nr0),interleave2(hc_real,hc_imag, 'col')];
+% h = [h(:,1:nr0),interleave2(hc_realp,hc_imagp, 'col'),interleave2(hc_realn,hc_imagn, 'col')];
 h = h.*scales;
 
 %Frequency response
@@ -82,21 +86,24 @@ if ~isempty(w)
     NsF = numel(w);
     z = ltipack.utGetComplexFrequencies(w,1);
     h1 = 1./(z-p(Ir));
-    h1a = 1./(z+p(Ir));
+%     h1a = 1./(z+p(Ir));
     Dr = z.^2-2*real(p(~Ir)).*z+abs(p(~Ir)).^2;
-    Dra = z.^2+2*real(p(~Ir)).*z+abs(p(~Ir)).^2;
+%     Dra = z.^2+2*real(p(~Ir)).*z+abs(p(~Ir)).^2;
     h2 = 2*imag(p(~Ir))./Dr;
-    h2a = 2*imag(p(~Ir))./Dra;
+%     h2a = 2*imag(p(~Ir))./Dra;
     h3 = 2*(z-real(p(~Ir)))./Dr;
-    h3a = 2*(z+real(p(~Ir)))./Dra;
+%     h3a = 2*(z+real(p(~Ir)))./Dra;
     %f = [h1,h1a,h3,h2,h3a,h2a];
-    f = [h1, h1a, interleave2(h3,h2, 'col'), interleave2(h3a, h2a, 'col')];
+%     f = [h1, h1a, interleave2(h3,h2, 'col'), interleave2(h3a, h2a, 'col')];
+    f  = [h1, interleave2(h3,h2, 'col')];
     f = f.*scales;
 else
     f = [];
 end
 %groups = [1:nr0, nr0+(1:nr0), 2*nr0 + kron([1,1], 1:nc0), 2*nr0 + nc0 + kron([1,1], 1:nc0)];
-groups = [1:nr0, nr0+(1:nr0), 2*nr0 + kron(1:nc0, [1,1]), 2*nr0 + nc0 + kron(1:nc0, [1,1])];
+% groups = [1:nr0, nr0+(1:nr0), 2*nr0 + kron(1:nc0, [1,1]), 2*nr0 + nc0 + kron(1:nc0, [1,1])];
+
+groups = [1:nr0, nr0 + kron(1:nc0, [1,1])];
 
 if C
     %delicate to deal with L

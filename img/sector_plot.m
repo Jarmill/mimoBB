@@ -1,5 +1,5 @@
 opt = mimoAtomOptions;
-opt.NumAtoms = 130;
+opt.NumAtoms = 200;
 opt.IncludeConstant = 0;
 
 rng(25)
@@ -7,7 +7,7 @@ rng(25)
 [h,p_out,scales, groups, f, L] = createAtoms(60,opt);
 
 opt2 = mimoAtomOptions;
-opt2.NumAtoms = 50;
+opt2.NumAtoms = 40;
 opt2.r1 = 0.7;
 opt2.r2 = 0.9;
 opt2.phi2 = pi/3;

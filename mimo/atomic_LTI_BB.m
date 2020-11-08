@@ -363,6 +363,9 @@ out.w = w;
 [C, ia, ic] = unique(In.PoleGroups(out.poles_active_ind));
 out.PoleGroups_new = ic';
 
+
+out.y_orig = In.ym;
+out.u = In.u;
 %out.residues_active = residues;
     
 %h_svd = svd(hankel_mo(h(2:min(1000,N),:)'));
