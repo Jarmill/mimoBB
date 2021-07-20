@@ -40,28 +40,32 @@ b_freq = reshape(b_freq, ny, nu, size(f, 1));
 %Atb = zeros(np, nu, ny);
 %Atb = reshape(Atb, np, nu, ny);
 Atb = reshape(Atb, ny, nu, np);
-fwb = zeros(size(Atb));
 
-%could probably replace with a tensor product
-for j = 1:nu
-    for i = 1:ny
-        %b_curr  = b_freq(:, j, i);
-        %wb = conj(W(:, j, i)).*b_curr;
-        %uwb = conj(U(:, j)) .* wb;
-        %fuwb = f'*uwb;
-        
-        b_curr  = b_freq(i, j, :);
-        wb = squeeze(conj(W(i, j, :)).*b_curr);
-        fwb(i, j, :) = f'* wb;
-        
-        
-        %Atb(i, j, :) = Atb(i, j, :) + fwb;
-        %Atb(:, j, i) = Atb(:, j, i) + fwb;
-        %ind_curr = ny*nu*(0:(np-1))  + nu*(i-1) + j;
-        %Atb(ind_curr) = Atb(ind_curr) + fuwb;
-    end
-end
-Atb = Atb + real(fwb);
+
+Atb_freq = mimo_freq_At(b,np, nu, ny, Ns, f, W);
+
+% fwb = zeros(size(Atb));
+% 
+% %could probably replace with a tensor product
+% for j = 1:nu
+%     for i = 1:ny
+%         %b_curr  = b_freq(:, j, i);
+%         %wb = conj(W(:, j, i)).*b_curr;
+%         %uwb = conj(U(:, j)) .* wb;
+%         %fuwb = f'*uwb;
+%         
+%         b_curr  = b_freq(i, j, :);
+%         wb = squeeze(conj(W(i, j, :)).*b_curr);
+%         fwb(i, j, :) = f'* wb;
+%         
+%         
+%         %Atb(i, j, :) = Atb(i, j, :) + fwb;
+%         %Atb(:, j, i) = Atb(:, j, i) + fwb;
+%         %ind_curr = ny*nu*(0:(np-1))  + nu*(i-1) + j;
+%         %Atb(ind_curr) = Atb(ind_curr) + fuwb;
+%     end
+% end
+Atb = Atb + real(Atb_freq);
 %Atb = real(Atb);
 Atb = squeeze(reshape(Atb, [], 1 ,1));
 
