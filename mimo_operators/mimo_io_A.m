@@ -25,7 +25,11 @@ function [Ac] = mimo_io_A(c,np, nu, ny, Ns, F, ha, f, W)
 
 %different order of variables, should be more amenable to randomization
 
-Ac_time = mimo_A(c, np, nu, ny, Ns, F, ha);
+if Ns == 0
+    Ac_time = [];
+else
+    Ac_time = mimo_A(c, np, nu, ny, Ns, F, ha);
+end
 
 Ac_freq_real = mimo_freq_A(c, np, nu, ny, f, W);
 % Nf = size(W, 3);

@@ -26,18 +26,27 @@ y = In.ym;
 u = In.u;
 
 tau = opt.tau;
-[Ns,ny] = size(y);
-nu = size(u,2);
 
-%Toeplitz the input for fast multiplication
-F = cell(1,nu);
-for ku = 1:nu    
-   %Tu{ku} = toeplitz(u(:,ku) ,[u(1,ku);zeros(Ns-1,1)]);
-   F{ku}  = toeplitzmultaux(u(:,ku),  [u(1,ku);zeros(Ns-1,1)]);
-   %matrix-vector toeplitz multiplication:
-   %y2 = toeplitzmult2(F, u);
+
+if isempty(y)
+    Ns = size(y, 1);
+    ny = opt.ny;
+    nu = opt.nu;
+    F = {};
+else
+    [Ns,ny] = size(y);
+    nu = size(u,2);
+
+    %Toeplitz the input for fast multiplication
+    F = cell(1,nu); %fft toeplitz of input, possibly trivial if time domain data is not used
+    for ku = 1:nu    
+       %Tu{ku} = toeplitz(u(:,ku) ,[u(1,ku);zeros(Ns-1,1)]);
+       F{ku}  = toeplitzmultaux(u(:,ku),  [u(1,ku);zeros(Ns-1,1)]);
+       %matrix-vector toeplitz multiplication:
+       %y2 = toeplitzmult2(F, u);
+    end
+
 end
-
 
 
 %Process the poles into groups for sum-of-norms regularization
@@ -168,13 +177,14 @@ BB_opt.num_var = nu*ny*np;
 BB_opt.tau = tau;
 BB_opt.w = w;
 %BB_opt.delta = 0;
-BB_opt.delta = 1e-4;
+BB_opt.delta = 1e-3;
 %BB_opt.delta = opt.delta;
 %BB_opt.norm_type = 2;
 %BB_opt.norm_type = Inf;
 BB_opt.norm_type = In.NormType;
 BB_opt.is_complex = 0;
-BB_opt.visualize = 0;
+% BB_opt.visualize = 0;
+BB_opt.visualize_end = 0;
 %BB_opt.DG_tol = 3e-3;
 BB_opt.DG_tol = 1e-2;
 

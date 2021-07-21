@@ -96,7 +96,10 @@ if ~isempty(w)
     %f = [h1,h1a,h3,h2,h3a,h2a];
 %     f = [h1, h1a, interleave2(h3,h2, 'col'), interleave2(h3a, h2a, 'col')];
     f  = [h1, interleave2(h3,h2, 'col')];
-    f = f.*scales;
+    
+    if Ns > 0
+        f = f.*scales;
+    end
 else
     f = [];
 end

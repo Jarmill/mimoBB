@@ -18,7 +18,11 @@ classdef mimoAtomOptions <handle
       FreqResponse = [];  % frequency response           
             
       %use Fully Corrective Frank Wolfe (1), or Forward Frank Wolfe (0)
-      FCFW(1,1) logical = true;  
+      FCFW(1,1) logical = true;   
+      
+      %TODO: number of inputs and outputs (corrrect this)
+      nu(1,1) double{mustBeNonnegative} = 1;
+      ny(1,1) double{mustBeNonnegative} = 1;
        
             
       %% Randomize (add new poles)

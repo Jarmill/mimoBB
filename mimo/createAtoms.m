@@ -46,6 +46,11 @@ p = uniform_over_ring_sector(opt.r1,opt.r2,opt.NumAtoms,opt.phi1,opt.phi2,C);
 %generate the poles
 [h,p_out, f, scales, groups, L] = createAtomsDict(p,FreqSample, C, NumSamples);
 
+
+if NumSamples == 0 
+    L = 1e8;
+end
+
 return
 
 % delays

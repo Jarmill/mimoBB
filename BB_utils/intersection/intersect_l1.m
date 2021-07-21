@@ -13,7 +13,7 @@ function [ x_out, valid, alpha_max ] = intersect_l1(x1, x2, tau)
 
 %floating point/numerical error sucks.
 %Write a new intersection routine for L1.
-%x1 is feasaible, x2 may not be. If x2 is on same extended face as x1 (and
+%x1 is feasible, x2 may not be. If x2 is on same extended face as x1 (and
 %x1 on boundary) do a simplex/like line search to find the point of
 %intersection. In all other circumstances (x2 inside, x1 inside, x1 on
 %boundary but x2 does not share extended face), use the stupid algorithm to

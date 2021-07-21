@@ -1,4 +1,4 @@
-function [Atb] = mimo_io_At(b,np, nu, ny, Ns, F, ha, f, W, Wt)
+function [Atb] = mimo_io_At(b,np, nu, ny, Ns, F, ha, f, W)
 %adjoint linear operator for response at output of subsystems with respect 
 %to input. Used in b -> A'b in gradient computation
 
@@ -10,6 +10,8 @@ function [Atb] = mimo_io_At(b,np, nu, ny, Ns, F, ha, f, W, Wt)
 %   ha: Pole dictionary in time
 %   f:  Pole dictionary in frequency
 %   W:  Weighting functions for each I/O pair
+
+%legacy (no longer used)
 %   Wt: weigthing term in determinant minimization
 
 %b = reshape(b, Ns, ny);
@@ -17,14 +19,13 @@ function [Atb] = mimo_io_At(b,np, nu, ny, Ns, F, ha, f, W, Wt)
 
 b_time = b(1:(Ns*ny));
 
-
-if nargin >= 11
-    b_time = b_time * Wt;
+if Ns == 0
+    Atb = zeros(ny, nu, np);
+else
+    Atb_time = mimo_At(b_time,np, nu, ny, Ns, F, ha);
+    Atb = Atb_time;
+    Atb = reshape(Atb, ny, nu, np);
 end
-
-Atb_time = mimo_At(b_time,np, nu, ny, Ns, F, ha);
-Atb = Atb_time;
-
 
 b_freq_real = b(Ns*ny + 1:end);
 b_freq = complex_fold(b_freq_real, 1);
@@ -39,7 +40,7 @@ b_freq = reshape(b_freq, ny, nu, size(f, 1));
 
 %Atb = zeros(np, nu, ny);
 %Atb = reshape(Atb, np, nu, ny);
-Atb = reshape(Atb, ny, nu, np);
+
 
 
 Atb_freq = mimo_freq_At(b,np, nu, ny, Ns, f, W);
