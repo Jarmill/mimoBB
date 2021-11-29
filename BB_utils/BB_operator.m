@@ -101,7 +101,8 @@ else
 end
 
 res = Ax - b;
-grad = At(res) + delta*x;
+At_res = At(res);
+grad = At_res + delta*x;
 [n, nlist] = anorm_1d(x,  opt.norm_type, opt.w);
 
 error_orig = 0.5*norm(Ax-b)^2 + 0.5*delta*norm(x)^2;

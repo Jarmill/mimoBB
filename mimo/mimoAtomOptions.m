@@ -23,6 +23,8 @@ classdef mimoAtomOptions <handle
       %TODO: number of inputs and outputs (corrrect this)
       nu(1,1) double{mustBeNonnegative} = 1;
       ny(1,1) double{mustBeNonnegative} = 1;
+      
+      SampleTime(1,1) double{mustBeNonnegative} = 1;
        
             
       %% Randomize (add new poles)

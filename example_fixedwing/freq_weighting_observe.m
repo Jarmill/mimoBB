@@ -36,12 +36,13 @@ opt.FreqResponse = Gs.ResponseData;
 opt.FreqSample = Gs.Frequency;
 opt.Compare = 0;
 opt.tau = 2;
-opt.RandomRounds = 10;
+opt.RandomRounds = 3;
 opt.ReweightRounds = 10;
-opt.NumAtoms = 10;
+opt.NumAtoms = 200;
 opt.NormType = Inf;
 opt.FormSystem = 1;
 opt.FCFW = 1; 
+opt.SampleTime = 1/2000;
 
 opt.IncludeConstant = 0; %disable later
 

@@ -42,10 +42,16 @@ opt.NormType = Inf;
 opt.FormSystem = 1;
 opt.FCFW = 1;
 
+%dimensions
+opt.nu = nu;
+opt.ny = ny;
+
 
 %sector bounds
 opt.r1 = 0.98;
 opt.phi2 = 0.5;
+
+
 %opt.delta = 1;
 if SOLVE
 [out, out_random] = exTrace_BB(sys,Ns,SNR,bw,opt); % target cost: 83202.8

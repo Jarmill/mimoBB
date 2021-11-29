@@ -1,0 +1,91 @@
+Status of the MIMO BB project (Jared Miller, 11/29/2021).
+
+#FIXED WING
+I have the fixed-wing analysis data from https://www.mathworks.com/help/ident/ug/modal-analysis-of-a-flexible-flying-wing-aircraft.html
+
+This is a system with 1 input (driving vertical motion at craft center) 
+and 20 outputs (height of various positions along the wing).
+
+Experiments are available at FlexibleWingData.mat. There are 10 experiments 
+in MeasuredData labeled Exp1-Exp10. Each experiment has an input u and two
+outputs y, corresponding to 2/20 output logs. The different experiments also
+have different inputs u. The input u is a chirp signal that increases from 
+3-35 Hz.
+
+Each experiment has 600,000 samples at a sampling frequency of 2kHz, 
+which corersponds to a 300 second observation window. 
+
+The testing script is in mimoBB/example_fixed_wing/freq_weighting_observe.m
+
+It is desired to perform a SYSID task on modes of the fixed-wing aircraft.
+
+
+The relevant frequency range for analysis is 6-35 Hz. 
+
+I believe that the poles being picked are [6.0417, 32.0000], as stored in 
+radians in opt.FreqSample. This is with settings of opt.r1 = 0.4 (inner 
+radius) and opt.phi2 = 2*pi*(120)*Gs.Ts = 0.12 (sector bound)
+
+Due to the gigantic size and possible noise contamination of the time 
+response data, only the estimated frequency response (I think by etfe from
+flexwing_freq.mat) is used to perform system identification. There is a 
+uniform weighting of W=1 for all systems and frequencies in the poles'
+range. The min/max frequency sampling effectuates a bandpass filter
+The console output is as follows:
+>> freq_weighting_observe
+Starting Randomization
+Cost: 3.349e+03 	 Order: 25 	 Time: 0.4227 
+Cost: 3.347e+03 	 (dCost = -2.172e+00) 	 Order: 32 	  Time: 0.3842 
+Cost: 3.346e+03 	 (dCost = -6.382e-01) 	 Order: 33 	  Time: 0.3069 
+Cost: 3.346e+03 	 (dCost = 0.000e+00) 	 Order: 33 	  Time: 0.0044 
+Starting Reweighting
+Cost: 3.335e+03 	 (dCost = -1.131e+01) 	 Order: 21 	  Time: 0.4400 
+Cost: 3.330e+03 	 (dCost = -4.990e+00) 	 Order: 15 	  Time: 0.6801 
+Cost: 3.329e+03 	 (dCost = -7.024e-01) 	 Order: 15 	  Time: 1.0972 
+Cost: 3.328e+03 	 (dCost = -1.300e+00) 	 Order: 14 	  Time: 0.4908 
+Cost: 3.327e+03 	 (dCost = -6.550e-01) 	 Order: 12 	  Time: 0.5981 
+Cost: 3.327e+03 	 (dCost = -5.458e-02) 	 Order: 12 	  Time: 0.4649 
+Cost: 3.327e+03 	 (dCost = -3.626e-03) 	 Order: 12 	  Time: 0.2988 
+Cost: 3.327e+03 	 (dCost = -3.086e-05) 	 Order: 12 	  Time: 0.5233 
+Cost: 3.327e+03 	 (dCost = -5.450e-09) 	 Order: 12 	  Time: 0.0029 
+
+An order 33 system is sparsified down to an order 12 system.
+
+I don't know how to evaluate effectifeness of the fit as an bode plot
+or impulse response, or what metrics to use. This cost seems very large.
+
+The output of this run is stored in flexwing_out.mat. `out_random' is the 
+system after randomization, `out' is the system postprocessed by reweighting.
+
+#GROUP BUG
+I have noticed a bug in my BB code involving problems with group structure.
+Sometimes an atom will be picked (large duality gap), but the stepsize in 
+BASH is on the order of 1e-9. In this case, the same atom will be picked 
+again, causing rank deficiencies in the code.
+
+I have previously implemented `regeneration' as a hack. The idea of 
+`regeneration' is that the same point x may be described as c1'a1 = c2'a2
+for coefficients c and atoms a. It is possible that L1_norm(c1) = tau but 
+L1_norm(c2) <= tau. In the case where the Ordinary Least Squares solution 
+is outside the tau-scaled unit atomic ball, the c2 formulation will allow
+for a lower objective solution. `Regeneration' is solving the BB problem of
+min ||x-x_ref||_2^2 subject to A_norm(x) <= tau. The 1regeneration' routine
+is implemented in BB_regenerate. I have had issues where BB_regenerate 
+would in turn call BB_regenerate, which is a recursive nightmare (the hack).
+
+I should note that https://github.com/vinyesm/fcgan is also vulnerable to 
+not making moves in the case of group-sparse penalties.
+
+I can try to create a subclass bash_asqp_manager < bash_manager. The class 
+bash_asqp_manager will call the mpcActiveSetSolver() routine for active-set
+quadratic programming. This would change the bash method, and would enable
+validation if the bug is in BASH, BAG, or BB_operator. 
+
+#BEYOND FRANK WOLFE
+The sysid paper at CDC is about Active Set Algorithms, not necessarily FW.
+Unfortunately, the L1/Linf penalty proposed in our work would be best 
+realized by a polytopic lift, which would yield PSD hessians in our 
+variables. Most active-set QPs such as mpcActiveSetSolver require full-rank
+hessians. SQOPT from https://ccom.ucsd.edu/~optimizers/solvers/sqopt/ 
+allows for PSD hessians, but would require that I write MATLAB code to call
+FORTRAN.

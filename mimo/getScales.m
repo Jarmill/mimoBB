@@ -1,6 +1,14 @@
 function [scales,L] = getScales(p,N)
 % Obtain scales such that nuclear norm of hankel(impulse(sys(p))) is 1.
 
+
+if N == 0
+    scales_poles = 1./sqrt(1-abs(p).^2);
+    scales_real = scales_poles(imag(p) == 0);
+    scales_imag = scales_poles(imag(p) ~= 0);
+    scales = [scales_real, kron(scales_imag, [1,1])];
+    L = 1e6;
+else
 if mod(N,2) == 0
    N_odd =  2*ceil(N/2)-1;   % Nearest odd number <= N, so that Hankel is square
    L = (N_odd+1)/2;              % Dimension of the square hankel matrix
@@ -35,5 +43,6 @@ else
     %scales = [scales1,scales2(~Ir),scales3(~Ir)];
     scales_complex = interleave2(scales2(~Ir), scales3(~Ir));
     scales = [scales1, scales_complex];
+end
 end
 end

@@ -12,21 +12,21 @@ Ns = 1000; nu = 3; ny = 2; nx = 5;
 %Ns = 5; nu = 1; ny = 1; nx = 5;
 SNR = 30; % signal_var/noise_var
 opt = mimoAtomOptions;
-opt.ShowProgressPlot = true;
-opt.IncludeConstant = true;
-opt.ModelType = "ss"; 
-opt.SearchMethod = "grad";
-opt.Type = "rational"; 
+% opt.ShowProgressPlot = true;
+% opt.IncludeConstant = true;
+% opt.ModelType = "ss"; 
+% opt.SearchMethod = "grad";
+% opt.Type = "rational"; 
 
 opt.FreqWeight = [];
 
-if opt.Type=="rational"
-   opt.MaxIterTrace = 400;
-   opt.NumAtoms = 600;
-else   
+% if opt.Type=="rational"
+%    opt.MaxIterTrace = 400;
+%    opt.NumAtoms = 600;
+% else   
    % not implemented yet
-   %
-end
+%    %
+% end
 
 %rho = 0.97; % spectral radius
 rho = 0.6; % spectral radius
@@ -48,8 +48,8 @@ opt.tau = 200;
 
 
 opt.NumAtoms = 800;
-opt.MaxIterTrace = 800;
-opt.ShowProgressPlot = false;
+% opt.MaxIterTrace = 800;
+% opt.ShowProgressPlot = false;
 %opt.SearchMethod = "grad";
 %opt.Randomize = true;
 

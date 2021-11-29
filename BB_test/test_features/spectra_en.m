@@ -39,7 +39,7 @@ opt.export_warm_start = 1;
 %[x_p, S_p, c_p] = BB_L_P(NIR, octane, tau_p, delta, p, 1);
 
 %BB_1d
-[x_l1, S_l1, c_l1, run_l1] = BB_operator(NIR octane, opt);
+[x_l1, S_l1, c_l1, run_l1] = BB_operator(NIR, octane, opt);
 %[x_max, S_max, c_max] = BB_1d(NIR, octane, tau_max, delta, Inf);
 %[x_p, S_p, c_p] = BB_1d(NIR, octane, tau_p, delta, p);
 

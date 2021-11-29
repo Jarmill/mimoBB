@@ -34,6 +34,8 @@ classdef bash_manager
         
         %bagging code
         bagger;     %handles subspace bagging
+        
+        ASQP = false;
     end
     
     methods
@@ -1210,25 +1212,31 @@ classdef bash_manager
             end
         end
         
-        function [obj, y_new, drop_ind, bash_iter] = bash_asqp(obj, y_old)
+        function [obj, y_new, drop_ind] = bash_asqp(obj, y_old)
              %use ASQP code to perform the bash step  
              
              %set up the system            
              %r = obj.system_rhs();
              r = obj.rhs;
-             new_atom_added = 1;
-             param.max_iter = 500;
-             param.debug_mode = 0;
-             param.epsilon = 1e-6;
-             %param.rho = obj.tau;
-             param.rho = obj.tau;
+             n = length(obj.K);
+             opts = mpcActiveSetOptions;
+             [y_new, exitflag, iA, lambda] = mpcActiveSetSolver(obj.K, obj.rhs, ...
+                 [-eye(n); ones(1, n)], [zeros(n, 1); obj.tau], zeros(0,n), zeros(0,1), ...
+             false(n+1, 1), opts);
+             
+%              new_atom_added = 1;
+%              param.max_iter = 500;
+%              param.debug_mode = 0;
+%              param.epsilon = 1e-6;
+%              %param.rho = obj.tau;
+%              param.rho = obj.tau;
              
               %solve the problem
-             [Y_new, A, bash_iter] = asqp_constrained(obj.K, r, obj.tau*y_old, param, new_atom_added);
+%              [Y_new, A, bash_iter] = asqp_constrained(obj.K, r, obj.tau*y_old, param, new_atom_added);
              
-             y_new = Y_new/obj.tau;
+%              y_new = Y_new/obj.tau;
              %delete bad atoms 
-             drop_ind = find(A==0);      
+             drop_ind = find(iA(1:end-1)==0);      
              obj = obj.delete_indices(drop_ind);
         end 
         
@@ -1282,11 +1290,11 @@ classdef bash_manager
             inner_done = 0;
             bash_iter = 1;                        
             
-            ASQP = 0;
-            if ASQP 
+%             ASQP = 1;
+            if obj.ASQP 
                 %this is wrong, ASQP has an equality constraint that sum(y)
                 %= rho
-                [obj, y, drop_ind, bash_iter] = bash_asqp(obj, y);
+                [obj, y, drop_ind] = bash_asqp(obj, y);
             else
 
                 %main bashing loop

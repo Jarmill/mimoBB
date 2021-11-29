@@ -36,7 +36,7 @@ opt.FreqResponse = G.ResponseData;
 % fprintf('Actual residue norm: %g\n',TargetCost)
 % fprintf('--------------------------------------------\n')
 
-[out, out_random] = atomic_LTI_iteration(y, u opt);
+[out, out_random] = atomic_LTI_iteration(y, u, opt);
 
 syse = out.sys_out;
 
