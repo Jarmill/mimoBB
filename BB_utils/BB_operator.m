@@ -103,6 +103,11 @@ else
     cardinality_start = 0;   
 end
 
+%default to Jared's interior/exterior active set solver
+if ~isfield(opt, 'ASQP')
+    opt.ASQP = 0;
+end
+
 res = Ax - b;
 At_res = At(res);
 grad = At_res + delta*x;
