@@ -21,6 +21,7 @@ function [x_final, S_final, c_final, run_log] = BB_operator(data, b, opt)
 %   w:          Weights for reweighted heuristic, or additional information
 %   num_var:    Number of variables
 %   ASQP:       Use matlab's mpcActiveSetSolver() routine to perform BASH
+%               (true) or Jared's iterative solver (false)
 %
 %Output:
 %   x_final:    x that minimizes LSQ + L2 objective
