@@ -39,31 +39,59 @@ classdef bash_manager
     end
     
     methods
-        function obj = bash_manager(b, tau, delta, norm_type, w, FCFW)
+        function obj = bash_manager(b, tau, delta, bash_opts)
             %constructor
             %BASH_MANAGER
             
             %bagging properties
             
             %central symmetry
+       
+            
+            if isfield(bash_opts, 'norm_type')
+                norm_type = bash_opts.norm_type;
+            else
+                norm_type = 1;
+            end
+            
+            %central symmetry
             if ischar(norm_type) && (strcmp(norm_type, 'point') || strcmp(norm_type, 'simp') || strcmp(norm_type, 'pos'))
                 CS = 0;
             else
                 CS = 1;
-            end            
+            end  
             
-            if nargin < 7
-                DG_tol = 1e-4;
-                if nargin < 6
-                    FCFW = 0;
-
-                    if nargin < 5
-                        w = 1;
-                    end
-                end
+            if isfield(bash_opts, 'w')
+                w = bash_opts.w;
+            else
+                w = [];
             end
             
+            if isfield(bash_opts, 'FCFW')
+               FCFW = bash_opts.FCFW;
+            else
+                FCFW = 0;
+            end
+            
+%             if nargin < 7
+%                 DG_tol = 1e-4;
+%                 if nargin < 6
+%                     FCFW = 0;
+% 
+%                     if nargin < 5
+%                         w = 1;
+%                     end
+%                 end
+%             end
+            DG_tol = 1e-4;
             obj.bagger = bag_manager(tau, norm_type, w, FCFW, DG_tol);
+            
+            
+            if isfield(bash_opts, 'ASQP')
+               obj.ASQP = bash_opts.ASQP;
+%             else
+%                 FCFW = 0;
+            end
             
             %original properties
             obj.b = b;
@@ -1212,31 +1240,23 @@ classdef bash_manager
             end
         end
         
-        function [obj, y_new, drop_ind] = bash_asqp(obj, y_old)
-             %use ASQP code to perform the bash step  
+        function [obj, y_new, drop_ind] = bash_asqp(obj, y_old, N_bag)
+             %use Active Set Quadratic Programming code to perform the 
+             %bash step. Specifically, call the function mpcActiveSetSolver
+             %to solve the quadratic program with warm starts
              
              %set up the system            
-             %r = obj.system_rhs();
-             r = obj.rhs;
+             r = obj.system_rhs();
+%              r = obj.rhs;
+    
              n = length(obj.K);
              opts = mpcActiveSetOptions;
-             [y_new, exitflag, iA, lambda] = mpcActiveSetSolver(obj.K, obj.rhs, ...
-                 [-eye(n); ones(1, n)], [zeros(n, 1); obj.tau], zeros(0,n), zeros(0,1), ...
-             false(n+1, 1), opts);
+             [y_new, exitflag, iA, lambda] = mpcActiveSetSolver(obj.K, -r, ...
+                 [-eye(n); ones(1, n)], [zeros(n, 1); 1], zeros(0,n), zeros(0,1), ...
+             [true(n-N_bag, 1);false(N_bag+1, 1)], opts);
              
-%              new_atom_added = 1;
-%              param.max_iter = 500;
-%              param.debug_mode = 0;
-%              param.epsilon = 1e-6;
-%              %param.rho = obj.tau;
-%              param.rho = obj.tau;
-             
-              %solve the problem
-%              [Y_new, A, bash_iter] = asqp_constrained(obj.K, r, obj.tau*y_old, param, new_atom_added);
-             
-%              y_new = Y_new/obj.tau;
              %delete bad atoms 
-             drop_ind = find(iA(1:end-1)==0);      
+             drop_ind = find(iA(1:end-1)==1);      
              obj = obj.delete_indices(drop_ind);
         end 
         
@@ -1294,7 +1314,10 @@ classdef bash_manager
             if obj.ASQP 
                 %this is wrong, ASQP has an equality constraint that sum(y)
                 %= rho
-                [obj, y, drop_ind] = bash_asqp(obj, y);
+                [obj, y, drop_ind] = bash_asqp(obj, y, N_bag);
+                
+%                 if ~obj.update_ext.exterior && (abs(sum(y)-1)<=1e-10)
+                    
             else
 
                 %main bashing loop

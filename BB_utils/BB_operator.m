@@ -20,6 +20,7 @@ function [x_final, S_final, c_final, run_log] = BB_operator(data, b, opt)
 %   norm_type:  Desired regularization norm.
 %   w:          Weights for reweighted heuristic, or additional information
 %   num_var:    Number of variables
+%   ASQP:       Use matlab's mpcActiveSetSolver() routine to perform BASH
 %
 %Output:
 %   x_final:    x that minimizes LSQ + L2 objective
@@ -91,8 +92,9 @@ else
     c = [];
     x = sparse(N, 1);
     Ax = A(x); 
+    bash_opts = struct('norm_type', norm_type, 'w', w, 'FCFW', FCFW, 'ASQP', opt.ASQP);
 
-    BM = bash_manager(b_bash, tau, delta, norm_type, w, FCFW);
+    BM = bash_manager(b_bash, tau, delta, bash_opts);
             
     on_boundary = 0;   
     
