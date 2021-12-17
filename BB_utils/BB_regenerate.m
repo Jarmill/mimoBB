@@ -3,7 +3,9 @@ function [x_rec, S_rec, c_rec ,run_log_rec] = BB_regenerate(x, opt, DG_tol)
 %(wasting atomic budget), pick a new set of atoms that equivalently
 %describes the input data x. Part of the  'cheat to win' initiative
 %
-%
+%Given x = c1' a1 with L1(c1) = tau, attempt to find a x = c2' a2 with
+%L1(c2) <= tau. This regeneration arises from a bug somewhere in the group
+%sparsity code, and should not be needed if the code routines works.
 data = struct;
 Id = @(xi) xi;
 data.A = Id;

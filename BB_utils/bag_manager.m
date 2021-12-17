@@ -1,5 +1,7 @@
 classdef bag_manager
-    %BAG_MANAGER Class to handle bagging of 1d atoms
+    %BAG_MANAGER A class that adds promising new atoms to the active set in
+    %optimization. This class calls the LMO (linear minimization oracle)
+    %function to pick out gradient-related atoms and directions.
     %   is a property of the bash_manager
     
     properties

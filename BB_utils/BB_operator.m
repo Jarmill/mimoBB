@@ -12,7 +12,10 @@ function [x_final, S_final, c_final, run_log] = BB_operator(data, b, opt)
 %
 %Input:
 %   A:          Data operator (generalizes data matrix)
+%                   either a matrix (A) or an operator @(x) A_func(x)                    
 %   At:         Adjoint data operator
+%                   leave blank if A is a matrix, or supply the operator
+%                   @(b) At_func(b)
 %   b:          Answer vector m x 1
 %opt fields:
 %   tau:        Radius of L1/ball or height of simplex

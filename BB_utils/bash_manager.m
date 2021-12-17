@@ -1,7 +1,9 @@
 classdef bash_manager
-    %BASH_MANAGER keeps track of the cholesky decomposition of the kernel
-    %matrix K. Operations include adding and deleting atoms sign-switching, 
-    %and 'subtraction' going from interior to exterior.
+    %BASH_MANAGER is an object that performs the active-set Quadratic
+    %Programming solver for the extended Fully Corrective Frank Wolfe
+    %system. This object keeps track of the cholesky decomposition of the 
+    %kernel matrix K. Operations include adding and deleting atoms,
+    % sign-switching, and 'subtraction' going from interior to exterior.
     
     
     %% Basic properties and constructor

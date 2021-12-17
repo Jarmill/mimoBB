@@ -1,6 +1,8 @@
 function [x_final, run_log] = BB_forward(data, b, opt)
 %simple implementation of forward frank wolfe
 %same arguments as BB_operator
+%there are no full-correction steps
+%the set of active atoms is not stored
 
 tau = opt.tau;
 delta = opt.delta;
