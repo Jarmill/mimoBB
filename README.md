@@ -1,5 +1,9 @@
 # mimoBB
-MIMO system identification by active set methods
+MIMO LTI system identification by active set methods
+
+Low-order systems are identified given time and/or frequency response information through the use of an L1/Linf-based grouping penalty. The Randomize phase adds new candidate atoms into the system, and the Reweight phase sparsifies the selection of atoms while monotonically decreasing fitting error. Consult `mimo/README.md` for further information.
+
+
 
 ## Reference
 
