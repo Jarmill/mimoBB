@@ -1,0 +1,1 @@
+This directory is a compilation of tests for new features in the Bag-and-Bash (BB) code for active-set convex optimization.
