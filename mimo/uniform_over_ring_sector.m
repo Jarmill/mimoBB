@@ -1,9 +1,7 @@
+function p = uniform_over_ring_sector(rho1,rho2,n,MinAngle,MaxAngle,IncludeConstant)
 % Generate n uniformly randomly distributed complex numbers inside the ring
 % defined by rho1 <= |p| <= rho2 and sector of MinAngle to MaxAngle
 % This code does not force set symmetry.
-
-
-function p = uniform_over_ring_sector(rho1,rho2,n,MinAngle,MaxAngle,IncludeConstant)
 
 Offset = nargin>5 && IncludeConstant;
 n0 = n;
