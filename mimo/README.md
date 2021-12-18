@@ -6,5 +6,6 @@ The Randomize phase adds and selects new poles to the system, where the set of p
 
 The Reweight phase sparsifies the selection of poles by performing a Reweighted Heuristic and scaling the atomic ball. No new atoms are added in the Reweight phase.
 
-Each Randomize or Reweight iteration in `atomic_LTI_iteration` involves a call to `atomic_LTI_BB`. The function `atomic_LTI_BB` creates data operators for the Fully Corrective Frank-Wolfe (FCFW) code in `BB_operator'. `atomic_LTI_BB` then formats the solved coefficients/problem from the FCFW routine and recovers the solved system.
+Each Randomize or Reweight iteration in `atomic_LTI_iteration` involves a call to `atomic_LTI_BB`. The function `atomic_LTI_BB` creates data operators for the Fully Corrective Frank-Wolfe (FCFW) code in `BB_operator`.  `atomic_LTI_BB` then formats the solved coefficients/problem from the FCFW routine and recovers the solved system.
 
+The code in `exTrace_BB` is an alternative (and deprecated) method that is not split into `atomic_LTI_iteration` and `atomic_LTI_BB`.
