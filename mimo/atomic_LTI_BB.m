@@ -187,6 +187,7 @@ BB_opt.is_complex = 0;
 BB_opt.visualize_end = 0;
 %BB_opt.DG_tol = 3e-3;
 BB_opt.DG_tol = 1e-2;
+BB_opt.ASQP = 0;
 
 if isfield(In, 'warm_start')
      if isstruct(In.warm_start)

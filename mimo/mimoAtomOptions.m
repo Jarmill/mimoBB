@@ -55,5 +55,8 @@ classdef mimoAtomOptions <handle
       %% Output and Comparision 
       FormSystem(1,1)logical = false;     %Form a transfer function of the system      
       Compare(1,1)logical = true; %compare against benchmarks
+
+
+      ASQP = 0;
    end
 end

@@ -12,8 +12,13 @@ theta = MinAngle + (MaxAngle-MinAngle)*Range;
 
 
 %number of real poles
-nr = floor(n/6);
-
+if MaxAngle == 0
+    %select only real poles in the dictionary
+    nr = n;
+    MaxAngle = 2*pi;
+else
+    nr = floor(n/6);
+end
 %some poles should be purely real
 if MaxAngle == 2*pi
     %if negative poles are allowed by sector bound,
